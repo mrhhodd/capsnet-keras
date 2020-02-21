@@ -31,7 +31,8 @@ class CapsNet():
         self.args = locals()
         self.class_map = {"NORMAL":0, "CNV":1, "DME":2, "DRUSEN":3}
         self.data = self.load_data(data_path)
-        self.model = self._create_model()
+        # self.model = self._create_model()
+        self.model = self._create_model_debug()
         if self.args["weights"]:
             self.load_weights()
         os.makedirs(self.args['save_dir'], exist_ok=True)
@@ -51,11 +52,6 @@ class CapsNet():
 
         # define modelcapsnet
     def _create_model(self):
-            """
-            A Capsule Network
-            :return: Two Keras Models, the first one used for training, and the second one for evaluation.
-                    `eval_model` can also be used for training.
-            """
             input_shape = self.args['input_shape']
             n_class = self.args['n_class']
             x = layers.Input(shape=input_shape)
@@ -77,6 +73,33 @@ class CapsNet():
             train_model = models.Model(x, out_caps)
 
             return train_model     
+
+    def _create_model_debug(self):
+            input_shape = self.args['input_shape']
+            n_class = self.args['n_class']
+            x = layers.Input(shape=input_shape)
+
+            # Layer 1: Just a conventional Conv2D layer
+            conv1 = layers.Conv2D(filters=128, kernel_size=9, strides=2, padding='valid', activation='relu', name='conv1')(x)
+
+            # Layer 2: Conv2D layer with `squash` activation, then reshape to [None, num_capsule, dim_capsule]
+            primarycaps = PrimaryCap(conv1, dim_capsule=8, n_channels=32, kernel_size=9, strides=2, padding='valid')
+
+            # Layer 3: Capsule layer. Routing algorithm works here.
+            caps_layer_1 = CapsuleLayer(num_capsule=n_class, dim_capsule=16, routings=self.args['routings'],
+                                    name='caps_layer_1')(primarycaps)
+
+            # Layer 3: Capsule layer. Routing algorithm works here.
+            caps_layer_2 = CapsuleLayer(num_capsule=n_class, dim_capsule=8, routings=self.args['routings'],
+                                    name='caps_layer_2')(caps_layer_1)
+
+            # Layer 4: This is an auxiliary layer to replace each capsule with its length. Just to match the true label's shape.
+            # If using tensorflow, this will not be necessary. :)
+            out_caps = Length(name='capsnet')(caps_layer_2)
+
+            train_model = models.Model(x, out_caps)
+
+            return train_model 
 
     def margin_loss(self, y_true, y_pred):
         """
@@ -145,8 +168,7 @@ class CapsNet():
 
     def test(self):
         (x_test , y_test) = self._get_data(self.data["test"])
-        y_pred = self.eval_model.predict(x_test, batch_size=self.args["batch_size"])
-        print('-'*30 + 'Begin: test' + '-'*30)
+        y_pred = self.model.predict(x_test, batch_size=self.args["batch_size"])
         print('Test acc:', np.sum(np.argmax(y_pred, 1) == np.argmax(y_test, 1))/y_test.shape[0])
 
     def _get_data(self, data_set):
