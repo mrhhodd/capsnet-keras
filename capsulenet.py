@@ -80,22 +80,18 @@ class CapsNet():
             x = layers.Input(shape=input_shape)
 
             # Layer 1: Just a conventional Conv2D layer
-            conv1 = layers.Conv2D(filters=128, kernel_size=9, strides=2, padding='valid', activation='relu', name='conv1')(x)
+            conv1 = layers.Conv2D(filters=128, kernel_size=9, strides=3, padding='valid', activation='relu', name='conv1')(x)
 
             # Layer 2: Conv2D layer with `squash` activation, then reshape to [None, num_capsule, dim_capsule]
-            primarycaps = PrimaryCap(conv1, dim_capsule=8, n_channels=32, kernel_size=9, strides=2, padding='valid')
+            primarycaps = PrimaryCap(conv1, dim_capsule=16, n_channels=32, kernel_size=9, strides=2, padding='valid')
 
             # Layer 3: Capsule layer. Routing algorithm works here.
-            caps_layer_1 = CapsuleLayer(num_capsule=n_class, dim_capsule=16, routings=self.args['routings'],
-                                    name='caps_layer_1')(primarycaps)
-
-            # Layer 3: Capsule layer. Routing algorithm works here.
-            caps_layer_2 = CapsuleLayer(num_capsule=n_class, dim_capsule=8, routings=self.args['routings'],
-                                    name='caps_layer_2')(caps_layer_1)
+            caps_layer = CapsuleLayer(num_capsule=n_class, dim_capsule=32, routings=self.args['routings'],
+                                    name='caps_layer')(primarycaps)
 
             # Layer 4: This is an auxiliary layer to replace each capsule with its length. Just to match the true label's shape.
             # If using tensorflow, this will not be necessary. :)
-            out_caps = Length(name='capsnet')(caps_layer_2)
+            out_caps = Length(name='capsnet')(caps_layer)
 
             train_model = models.Model(x, out_caps)
 
