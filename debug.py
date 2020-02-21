@@ -108,9 +108,9 @@ resize_images("/home/hod/mag/OCT2017_", "/home/hod/mag/64x64_oct2017_4k_examples
 # resize_images("/home/hod/mag/OCT2017_", "/home/hod/mag/128x128_oct2017_10k_examples", 128, 128, 10000)
 
 from capsulenet import CapsNet
-cn = CapsNet(epochs=10, batch_size=100, 
-    save_dir='/home/hod/64x64_oct2017_4k_examples_10epochs', 
-    data_path="/home/hod/mag/64x64_oct2017_4k_examples", 
+cn = CapsNet(epochs=10, batch_size=30, 
+    save_dir='/home/hod/OCT2017_preprocessed_128x128_10epochs', 
+    data_path="/home/hod/mag/data/OCT2017_preprocessed_128x128", 
     input_shape=[128,128,1])
 cn.train() #or  cn.load_weights
 cn.test()
