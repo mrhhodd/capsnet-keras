@@ -33,7 +33,9 @@ class CapsNet():
         self.args = locals()
         self.class_map = {"NORMAL":0, "CNV":1, "DME":2, "DRUSEN":3}
         self.data = self.load_data(data_path)
-        self.model, self.eval_model = self._create_model()
+        self.model = self._create_model()
+        if self.args["weights"]:
+            self.load_weights()
         os.makedirs(self.args['save_dir'], exist_ok=True)
 
     def load_data(self, rootdir):
@@ -45,6 +47,9 @@ class CapsNet():
             np.random.shuffle(files)
             data_set.extend(files)
         return data_sets
+
+    def load_weights(self):
+        self.model.load_weights(self.args["weights"])
 
         # define modelcapsnet
     def _create_model(self):
@@ -72,9 +77,8 @@ class CapsNet():
             out_caps = Length(name='capsnet')(digitcaps)
 
             train_model = models.Model(x, out_caps)
-            eval_model = models.Model(x, out_caps)
 
-            return train_model, eval_model      
+            return train_model     
 
     def margin_loss(self, y_true, y_pred):
         """
