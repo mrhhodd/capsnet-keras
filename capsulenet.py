@@ -9,10 +9,8 @@ from keras import layers, models, optimizers, callbacks
 from keras import backend as K
 from keras.preprocessing.image import load_img, img_to_array
 from keras.utils import to_categorical
-import matplotlib.pyplot as plt
-from utils import combine_images
 from PIL import Image
-from capsulelayers import CapsuleLayer, PrimaryCap, Length, Mask
+from capsulelayers import CapsuleLayer, PrimaryCap, Length
 K.set_image_data_format('channels_last')
 
 
