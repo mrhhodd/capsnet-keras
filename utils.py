@@ -1,8 +1,40 @@
 import numpy as np
 from matplotlib import pyplot as plt
-import csv
-import math
 import pandas
+import os
+
+def load_data(rootdir, balance_data=False):
+    data_sets = { "train": [],  "test": [],  "val": [] }
+
+    if balance_data:
+        classes = ["NORMAL", "CNV", "DME", "DRUSEN"]
+        test_val_size = 1000
+        all_files = {}
+        for class_name in classes:
+            all_files[class_name] = []
+        for (dirpath, _, filenames) in os.walk(rootdir):
+            for class_name in classes:
+                all_files[class_name].extend([os.path.join(dirpath, filename) for filename in filenames if class_name in filename])
+        min_count = min([len(data_set) for data_set_name, data_set in all_files.items()])
+        val_count = int(test_val_size/len(classes))
+        test_count = int(test_val_size/len(classes))
+        train_count = min_count - val_count - test_count
+        for class_name, files in all_files.items():
+            np.random.shuffle(files)
+            data_sets["val"].extend(files[:val_count])
+            data_sets["test"].extend(files[val_count:val_count+test_count])
+            data_sets["train"].extend(files[val_count+test_count:val_count+test_count+train_count])
+
+    else:
+        for data_set_name, data_set in data_sets.items():
+            files = []
+            for (dirpath, dirnames, filenames) in os.walk(os.path.join(rootdir, data_set_name)):
+                files.extend([os.path.join(dirpath, filename) for filename in filenames])
+            np.random.shuffle(files)
+            data_set.extend(files)
+
+    return data_sets
+
 
 def plot_log(filename, show=True):
 

@@ -66,8 +66,6 @@ def generate_new_database(rootdir, newdir, new_size_h, new_size_w, max_examples=
         cv2.imwrite(os.path.join(newdir, data_set_name, os.path.basename(file_path)), new_image)
         i+=1
     
-    
-
 def resize_images(rootdir, newdir, new_size_h, new_size_w, max_examples=None):
     import cv2
     os.makedirs(newdir, exist_ok=True)
@@ -101,18 +99,12 @@ def resize_images(rootdir, newdir, new_size_h, new_size_w, max_examples=None):
 # resize_images("/home/hod/mag/OCT2017_", "/home/hod/mag/32x32_oct2017", 32, 32)
 # resize_images("/home/hod/mag/OCT2017_", "/home/hod/mag/32x32_oct2017_10k_examples", 32, 32, 10000)
 # resize_images("/home/hod/mag/OCT2017_", "/home/hod/mag/64x64_oct2017_10k_examples", 64, 64, 10000)
-resize_images("/home/hod/mag/OCT2017_", "/home/hod/mag/64x64_oct2017_4k_examples", 64, 64, 4000)
+# resize_images("/home/hod/mag/OCT2017_", "/home/hod/mag/64x64_oct2017_4k_examples", 64, 64, 4000)
 # resize_images("/home/hod/mag/OCT2017_", "/home/hod/mag/64x64_oct2017_1k_examples", 64, 64, 1000)
 # resize_images("/home/hod/mag/OCT2017_", "/home/hod/mag/64x64_oct2017_1k_examples_same_dim", 64, 64, 1000)
 # generate_new_database("/home/hod/mag/OCT2017_", "/home/hod/mag/64x64_oct2017_1.2k_examples_same_dim_mixed", 64, 64, 1200)
 # resize_images("/home/hod/mag/OCT2017_", "/home/hod/mag/128x128_oct2017_10k_examples", 128, 128, 10000)
 
 from capsulenet import CapsNet
-cn = CapsNet(epochs=10, batch_size=30, 
-    save_dir='/home/hod/OCT2017_preprocessed_128x128_10epochs', 
-    data_path="/home/hod/mag/data/OCT2017_preprocessed_128x128", 
-    input_shape=[128,128,1])
-cn.train() #or  cn.load_weights
-cn.test()
+from utils import load_data
 
-# from __future__ import absolute_import, division, print_function, unicode_literals
