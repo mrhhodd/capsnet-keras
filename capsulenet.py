@@ -9,9 +9,7 @@ from tensorflow.keras import models, layers, optimizers, callbacks
 from tensorflow.keras import backend as K
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.utils import to_categorical
-# from capsulelayers import CapsuleLayer, PrimaryCap, Length, CapsuleLayerNew
-from capsulelayers import PrimaryCap
-from layers import CapsuleLayer, Length
+from layers import PrimaryCap, CapsuleLayer, Length
 K.set_image_data_format('channels_last')
 
 
@@ -34,26 +32,36 @@ class CapsNet():
         self.model.load_weights(weights)
 
         # define modelcapsnet
+    # def _create_model(self):
+    #     input_shape = self.args['input_shape']
+    #     n_class = self.args['n_class']
+
+    #     x = layers.Input(shape=input_shape)  
+
+    #     conv1 = layers.Conv2D(filters=32, kernel_size=9, strides=2, padding='valid', activation='relu', name='conv1')(x)
+
+    #     primarycaps = PrimaryCaps(conv1, dim_capsule=8, n_channels=32, kernel_size=9, strides=2, padding='valid')
+
     def _create_model(self):
-            input_shape = self.args['input_shape']
-            n_class = self.args['n_class']
-            x = layers.Input(shape=input_shape)
+        input_shape = self.args['input_shape']
+        n_class = self.args['n_class']
+        x = layers.Input(shape=input_shape)
 
-            # Layer 1: Just a conventional Conv2D layer
-            conv1 = layers.Conv2D(filters=256, kernel_size=9, strides=3, padding='valid', activation='relu', name='conv1')(x)
+        # Layer 1: Just a conventional Conv2D layer
+        conv1 = layers.Conv2D(filters=32, kernel_size=9, strides=3, padding='valid', activation='relu', name='conv1')(x)
 
-            # Layer 2: Conv2D layer with `squash` activation, then reshape to [None, num_capsule, dim_capsule]
-            primarycaps = PrimaryCap(conv1, dim_capsule=8, n_channels=32, kernel_size=9, strides=2, padding='valid')
+        # Layer 2: Conv2D layer with `squash` activation, then reshape to [None, num_capsule, dim_capsule]
+        primarycaps = PrimaryCap(conv1, dim_capsule=8, n_channels=32, kernel_size=9, strides=2, padding='valid')
 
-            # Layer 3: Capsule layer. Routing algorithm works here.
-            digitcaps = CapsuleLayer(num_capsule=n_class, dim_capsule=16, routings=self.args['routings'],
-                                     share_weights=False, name='digitcaps')(primarycaps)
+        # Layer 3: Capsule layer. Routing algorithm works here.
+        digitcaps = CapsuleLayer(num_capsule=n_class, dim_capsule=16, routings=self.args['routings'],
+                                    share_weights=True, name='digitcaps')(primarycaps)
 
-            # Layer 4: This is an auxiliary layer to replace each capsule with its length. Just to match the true label's shape.
-            # If using tensorflow, this will not be necessary. :)
-            out_caps = Length(name='capsnet')(digitcaps)
+        # Layer 4: This is an auxiliary layer to replace each capsule with its length. Just to match the true label's shape.
+        # If using tensorflow, this will not be necessary. :)
+        out_caps = Length(name='capsnet')(digitcaps)
 
-            return models.Model(x, out_caps) 
+        return models.Model(x, out_caps) 
 
     def margin_loss(self, y_true, y_pred):
         lamb, margin = 0.5, 0.1
@@ -72,7 +80,8 @@ class CapsNet():
         self.model.compile(optimizer=optimizers.Adam(lr=self.args["lr"] ),
                     loss=[self.margin_loss],
                     loss_weights=[1.],
-                    metrics={'capsnet': 'accuracy'})
+                    # metrics={'capsnet': 'accuracy'})
+                    metrics=['accuracy'])
 
         self.model.fit(x=self._get_training_data(),
                        steps_per_epoch=np.ceil(len(self.data['train']) / self.args['batch_size']),
@@ -106,7 +115,8 @@ class CapsNet():
         while True:
             for file_path in self.data["train"]:
                 img_arr = img_to_array(load_img(path=file_path, color_mode="grayscale"))
-                class_no = self.class_map[os.path.basename(file_path).split("-")[0]]        
+                class_no = self.class_map[os.path.basename(file_path).split("-")[0]]
+                print("Giving examples!")        
                 yield (img_arr, class_no)
 
     def test(self):

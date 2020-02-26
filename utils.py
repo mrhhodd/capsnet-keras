@@ -8,14 +8,16 @@ def load_data(rootdir, balance_data=False):
 
     if balance_data:
         classes = ["NORMAL", "CNV", "DME", "DRUSEN"]
-        test_val_size = 1000
+        # test_val_size = 1000
+        test_val_size = 12
         all_files = {}
         for class_name in classes:
             all_files[class_name] = []
         for (dirpath, _, filenames) in os.walk(rootdir):
             for class_name in classes:
                 all_files[class_name].extend([os.path.join(dirpath, filename) for filename in filenames if class_name in filename])
-        min_count = min([len(data_set) for data_set_name, data_set in all_files.items()])
+        # min_count = min([len(data_set) for data_set_name, data_set in all_files.items()])
+        min_count = 124
         val_count = int(test_val_size/len(classes))
         test_count = int(test_val_size/len(classes))
         train_count = min_count - val_count - test_count
