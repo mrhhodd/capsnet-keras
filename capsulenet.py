@@ -41,33 +41,11 @@ class CapsNet():
         primarycaps = PrimaryCaps(dim_capsule=8, capsules=32, kernel_size=9, strides=3, padding='valid')(conv1)
         caps1 = CapsuleLayer(num_capsule=n_class, dim_capsule=16, routings=self.args['routings'],
                                  name='caps1')(primarycaps)        
-        out_caps = Length(name='capsnet')(caps1)
+        out_caps = Length(name='outputs')(caps1)
 
         model = models.Model(x, out_caps)
         model.summary()
         return model
-
-
-    # def _create_model(self):
-    #     input_shape = self.args['input_shape']
-    #     n_class = self.args['n_class']
-    #     x = layers.Input(shape=input_shape)
-
-    #     # Layer 1: Just a conventional Conv2D layer
-    #     conv1 = layers.Conv2D(filters=32, kernel_size=9, strides=3, padding='valid', activation='relu', name='conv1')(x)
-
-    #     # Layer 2: Conv2D layer with `squash` activation, then reshape to [None, num_capsule, dim_capsule]
-    #     primarycaps = PrimaryCap(conv1, dim_capsule=8, n_channels=32, kernel_size=9, strides=2, padding='valid')
-
-    #     # Layer 3: Capsule layer. Routing algorithm works here.
-    #     digitcaps = CapsuleLayer(num_capsule=n_class, dim_capsule=16, routings=self.args['routings'],
-    #                                 share_weights=True, name='digitcaps')(primarycaps)
-
-    #     # Layer 4: This is an auxiliary layer to replace each capsule with its length. Just to match the true label's shape.
-    #     # If using tensorflow, this will not be necessary. :)
-    #     out_caps = Length(name='capsnet')(digitcaps)
-
-    #     return models.Model(x, out_caps) 
 
     def margin_loss(self, y_true, y_pred):
         lamb, margin = 0.5, 0.1
@@ -75,31 +53,28 @@ class CapsNet():
             1 - y_true) * K.square(K.relu(y_pred - margin)), axis=-1)
 
     def train(self):
-        """
-        Training a CapsuleNet
-        :param model: the CapsuleNet model
-        :param data: a tuple containing training and testing data, like `((x_train, y_train), (x_test, y_test))`
-        :param args: arguments
-        :return: The trained model
-        """
-
+        x, y = self._get_data(self.data["train"])
         self.model.compile(optimizer=optimizers.Adam(lr=self.args["lr"] ),
                     loss=[self.margin_loss],
                     loss_weights=[1.],
-                    # metrics={'capsnet': 'accuracy'})
-                    metrics=['accuracy'])
+                    metrics={'outputs': 'accuracy'})
 
-        self.model.fit(x=self._get_training_data(),
-                       steps_per_epoch=np.ceil(len(self.data['train']) / self.args['batch_size']),
+        # self.model.fit(x=self._get_training_data(),
+        #                steps_per_epoch=np.ceil(len(self.data['train']) / self.args['batch_size']),
+        print(self._get_data(self.data["val"]))
+        raise Exception("123")
+        self.model.fit(x=x, y=y,
+                       batch_size=self.args['batch_size'],
                        epochs=self.args["epochs"], 
                        validation_data=self._get_data(self.data["val"]), 
                        callbacks=[
-                           callbacks.CSVLogger(self.args["save_dir"] + '/log.csv'),
-                           callbacks.TensorBoard(log_dir=self.args["save_dir"] + '/tensorboard-logs', histogram_freq=int(self.args["debug"])),
-                           callbacks.ModelCheckpoint(self.args["save_dir"] + '/weights-{epoch:02d}.h5', monitor='val_capsnet_acc',
+                            callbacks.CSVLogger(self.args["save_dir"] + '/log.csv'),
+                            callbacks.TensorBoard(log_dir=self.args["save_dir"] + '/tensorboard-logs', histogram_freq=int(self.args["debug"])),
+                            callbacks.ModelCheckpoint(self.args["save_dir"] + '/weights-{epoch:02d}.h5', monitor='val_capsnet_acc',
                                             save_best_only=True, save_weights_only=True, verbose=1),
-                           callbacks.LearningRateScheduler(schedule=lambda epoch: self.args["lr"] * (self.args["lr_decay"]  ** epoch))
-                        ])
+                            callbacks.LearningRateScheduler(schedule=lambda epoch: self.args["lr"] * (self.args["lr_decay"]  ** epoch))
+                            ]
+                        )
 
         self.model.save_weights(self.args["save_dir"] + '/trained_model.h5')
         print('Trained model saved to \'%s/trained_model.h5\'' % self.args["save_dir"])
@@ -146,7 +121,8 @@ if __name__ == "__main__":
     from utils import load_data
 
     data = load_data("/home/hod/mag/data/OCT2017_preprocessed_128x128", balance_data=True)
-    cn = CapsNet(epochs=10, batch_size=10, 
+    # data = load_data("/home/hod/mag/data/OCT2017_preprocessed_128x128")
+    cn = CapsNet(epochs=1, batch_size=10, 
         save_dir="/home/hod/mag/results/OCT2017_preprocessed_128x128", 
         input_shape=[128,128,1]
         )
