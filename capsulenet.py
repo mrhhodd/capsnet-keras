@@ -62,7 +62,6 @@ class CapsNet():
         # self.model.fit(x=self._get_training_data(),
         #                steps_per_epoch=np.ceil(len(self.data['train']) / self.args['batch_size']),
         print(self._get_data(self.data["val"]))
-        raise Exception("123")
         self.model.fit(x=x, y=y,
                        batch_size=self.args['batch_size'],
                        epochs=self.args["epochs"], 
