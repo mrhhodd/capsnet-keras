@@ -20,6 +20,9 @@ class Length(layers.Layer):
     def compute_output_shape(self, input_shape):
         return input_shape[:-1]
 
+    def get_config(self):
+        return super(Length, self).get_config()
+
 def squash(x, axis=-1):
     # s_squared_norm = K.sum(K.square(x), axis, keepdims=True) + K.epsilon()
     # scale = K.sqrt(s_squared_norm)/ (0.5 + s_squared_norm)
@@ -36,16 +39,13 @@ def softmax(x, axis=-1):
 
 #A Capsule Implement with Pure Keras
 class CapsuleLayer(layers.Layer):
-    def __init__(self, num_capsule, dim_capsule, routings=3, share_weights=True, activation='squash', **kwargs):
+    def __init__(self, num_capsule, dim_capsule, routings=3, share_weights=False, **kwargs):
         super(CapsuleLayer, self).__init__(**kwargs)
         self.num_capsule = num_capsule
         self.dim_capsule = dim_capsule
         self.routings = routings
         self.share_weights = share_weights
-        if activation == 'squash':
-            self.activation = squash
-        else:
-            self.activation = activations.get(activation)
+        self.activation = squash
 
     def build(self, input_shape):
         super(CapsuleLayer, self).build(input_shape)
@@ -69,16 +69,13 @@ class CapsuleLayer(layers.Layer):
         if self.share_weights:
             u_hat_vecs = K.conv1d(u_vecs, self.W)
         else:
-            print("!!!!!!!!!!!", 1)
             u_hat_vecs = K.local_conv1d(u_vecs, self.W, [1], [1])
         
-        print("!!!!!!!!!!!", 2)
         batch_size = K.shape(u_vecs)[0]
         input_num_capsule = K.shape(u_vecs)[1]
         u_hat_vecs = K.reshape(u_hat_vecs, (batch_size, input_num_capsule,
                                             self.num_capsule, self.dim_capsule))
         u_hat_vecs = K.permute_dimensions(u_hat_vecs, (0, 2, 1, 3))
-        print("!!!!!!!!!!!", 3)
         #final u_hat_vecs.shape = [None, num_capsule, input_num_capsule, dim_capsule]
 
         b = K.zeros_like(u_hat_vecs[:,:,:,0]) #shape = [None, num_capsule, input_num_capsule]
@@ -92,7 +89,6 @@ class CapsuleLayer(layers.Layer):
                 o = K.l2_normalize(o, -1)
                 # b = K.batch_dot(o, u_hat_vecs, [2, 3])
                 b = tf.einsum('bij,binj->bin', o, u_hat_vecs)
-        print("!!!!!!!!!!!", 4)
         return self.activation(o)
 
     def compute_output_shape(self, input_shape):
@@ -102,16 +98,21 @@ class CapsuleLayer(layers.Layer):
         config = super(CapsuleLayer, self).get_config()
         return config
 
-def PrimaryCap(inputs, dim_capsule, n_channels, kernel_size, strides, padding):
-    """
-    Apply Conv2D `n_channels` times and concatenate all capsules
-    :param inputs: 4D tensor, shape=[None, width, height, channels]
-    :param dim_capsule: the dim of the output vector of capsule
-    :param n_channels: the number of types of capsules
-    :return: output tensor, shape=[None, num_capsule, dim_capsule]
-    """
-    output = layers.Conv2D(filters=dim_capsule*n_channels, kernel_size=kernel_size, strides=strides, padding=padding,
-                           name='primarycap_conv2d')(inputs)
-    num_capsule = int(256*256/dim_capsule)
-    outputs = layers.Reshape(target_shape=(num_capsule, dim_capsule), name='primarycap_reshape')(output)
-    return layers.Lambda(squash, name='primarycap_squash')(outputs)
+class PrimaryCaps(layers.Conv2D):
+    def __init__(self, dim_capsule, capsules, **kwargs):
+        super(PrimaryCaps, self).__init__(filters=dim_capsule*capsules, **kwargs)
+        self.activation = squash
+        self.dim_capsule = dim_capsule
+        self.capsules = capsules
+        
+    def call(self, inputs):
+        raw_outputs = super(PrimaryCaps, self).call(inputs)
+        outputs = layers.Reshape(target_shape=self.compute_output_shape(raw_outputs.shape)[1:])(raw_outputs)
+        return outputs
+
+    def compute_output_shape(self, input_shape):
+        num_capsule = int(input_shape[1] * input_shape[2] * input_shape[3] / self.dim_capsule)
+        return (None, num_capsule, self.dim_capsule)
+
+    def get_config(self):
+        return super(Length, self).get_config()
