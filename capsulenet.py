@@ -20,20 +20,67 @@ class CapsNet():
                  save_dir='/home/hod',
                  debug=False):
         self.args = locals()
-        self.data = None
+        self.data = {}
         self.class_map = {"NORMAL": 0, "CNV": 1, "DME": 2, "DRUSEN": 3}
         self.model = self._create_model()
         os.makedirs(self.args['save_dir'], exist_ok=True)
     
-    def set_data(self, data):
-        self.data = data
+    def load_data(self, rootdir, balance_data=False, data_split=None):
+        data_sets = { "train": [],  "test": [],  "val": [] }
+        if balance_data:
+            classes = ["NORMAL", "CNV", "DME", "DRUSEN"]
+            test_val_size = 1000
+            all_files = {}
+            for class_name in classes:
+                all_files[class_name] = []
+            for (dirpath, _, filenames) in os.walk(rootdir):
+                for class_name in classes:
+                    all_files[class_name].extend([os.path.join(dirpath, filename) for filename in filenames if class_name in filename])
+
+            if data_split:
+                (train_count, val_count, test_count) = data_split
+            else:   
+                min_count = min([len(data_set) for data_set_name, data_set in all_files.items()])
+                val_count = int(test_val_size/len(classes))
+                test_count = int(test_val_size/len(classes))
+                train_count = min_count - val_count - test_count
+            
+            for class_name, files in all_files.items():
+                np.random.shuffle(files)
+                data_sets["val"].extend(files[:val_count])
+                data_sets["test"].extend(files[val_count:val_count+test_count])
+                data_sets["train"].extend(files[val_count+test_count:val_count+test_count+train_count])
+
+        else:
+            for data_set_name, data_set in data_sets.items():
+                files = []
+                for (dirpath, dirnames, filenames) in os.walk(os.path.join(rootdir, data_set_name)):
+                    files.extend([os.path.join(dirpath, filename) for filename in filenames])
+                np.random.shuffle(files)
+                data_set.extend(files)
+        
+        for data_set_name, data_set in data_sets.items():
+            print(f"Loading {len(data_set)} examples for {data_set_name}")
+            self.data[data_set_name] = self._get_data(data_set)
+            print(f"Finished loading examples for {data_set_name}")
+
+    def _get_data(self, data_set):
+        temp_x = []
+        temp_y = []
+        for file_path in data_set:
+            img_arr = img_to_array(load_img(path=file_path, color_mode="grayscale"))
+            temp_x.append(img_arr)
+            class_no = self.class_map[os.path.basename(file_path).split("-")[0]]
+            temp_y.append(class_no)
+        x = np.array(temp_x).reshape(-1, *self.args['input_shape']).astype('float32') / 255
+        y = to_categorical(np.array(temp_y).astype('float32'), self.args['n_class'])
+        return {"x":x, "y":y}
 
     def load_weights(self, weights):
         self.model.load_weights(weights)
 
     def _create_model(self):
         input_shape = self.args['input_shape']
-        # input_shape = [28,28,1]
         n_class = self.args['n_class']
 
         x = layers.Input(shape=input_shape)  
@@ -53,19 +100,19 @@ class CapsNet():
             1 - y_true) * K.square(K.relu(y_pred - margin)), axis=-1)
 
     def train(self):
-        x, y = self._get_data(self.data["train"])
+        train_x = self.data["train"]["x"]
+        train_y = self.data["train"]["y"]
+        val_x = self.data["val"]["x"]
+        val_y = self.data["val"]["y"]
         self.model.compile(optimizer=optimizers.Adam(lr=self.args["lr"] ),
                     loss=[self.margin_loss],
                     loss_weights=[1.],
                     metrics={'outputs': 'accuracy'})
 
-        # self.model.fit(x=self._get_training_data(),
-        #                steps_per_epoch=np.ceil(len(self.data['train']) / self.args['batch_size']),
-        print(self._get_data(self.data["val"]))
-        self.model.fit(x=x, y=y,
+        self.model.fit(x=train_x, y=train_y,
                        batch_size=self.args['batch_size'],
                        epochs=self.args["epochs"], 
-                       validation_data=self._get_data(self.data["val"]), 
+                       validation_data=(val_x, val_y), 
                        callbacks=[
                             callbacks.CSVLogger(self.args["save_dir"] + '/log.csv'),
                             callbacks.TensorBoard(log_dir=self.args["save_dir"] + '/tensorboard-logs', histogram_freq=int(self.args["debug"])),
@@ -78,54 +125,19 @@ class CapsNet():
         self.model.save_weights(self.args["save_dir"] + '/trained_model.h5')
         print('Trained model saved to \'%s/trained_model.h5\'' % self.args["save_dir"])
 
-    def _get_training_data(self):
-        data_generator = self._training_example_generator()
-        while True:
-            temp_x = []
-            temp_y = []
-            while len(temp_x) < self.args["batch_size"]:
-                (raw_x, raw_y) = next(data_generator)
-                temp_x.append(raw_x)
-                temp_y.append(raw_y)
-            x = np.array(temp_x).reshape(-1, *self.args['input_shape']).astype('float32') / 255
-            y = to_categorical(np.array(temp_y).astype('float32'), self.args['n_class'])
-            yield (x, y)
-
-    def _training_example_generator(self):
-        while True:
-            for file_path in self.data["train"]:
-                img_arr = img_to_array(load_img(path=file_path, color_mode="grayscale"))
-                class_no = self.class_map[os.path.basename(file_path).split("-")[0]]
-                yield (img_arr, class_no)
-
     def test(self):
-        (x_test , y_test) = self._get_data(self.data["test"])
-        y_pred = self.model.predict(x_test, batch_size=self.args["batch_size"])
-        print('Test acc:', np.sum(np.argmax(y_pred, 1) == np.argmax(y_test, 1))/y_test.shape[0])
-
-    def _get_data(self, data_set):
-        temp_x = []
-        temp_y = []
-        for file_path in data_set:
-            img_arr = img_to_array(load_img(path=file_path, color_mode="grayscale"))
-            temp_x.append(img_arr)
-            class_no = self.class_map[os.path.basename(file_path).split("-")[0]]
-            temp_y.append(class_no)
-        x = np.array(temp_x).reshape(-1, *self.args['input_shape']).astype('float32') / 255
-        y = to_categorical(np.array(temp_y).astype('float32'), self.args['n_class'])
-        return (x, y)
+        test_x = self.data["test"]["x"]
+        test_y = self.data["test"]["y"]
+        pred_y = self.model.predict(test_x, batch_size=self.args["batch_size"])
+        print('Test acc:', np.sum(np.argmax(pred_y, 1) == np.argmax(test_y, 1))/test_y.shape[0])
 
 
 if __name__ == "__main__":
-    from utils import load_data
-
-    data = load_data("/home/hod/mag/data/OCT2017_preprocessed_128x128", balance_data=True)
-    # data = load_data("/home/hod/mag/data/OCT2017_preprocessed_128x128")
     cn = CapsNet(epochs=1, batch_size=10, 
         save_dir="/home/hod/mag/results/OCT2017_preprocessed_128x128", 
         input_shape=[128,128,1]
         )
-    cn.set_data(data)
+    cn.load_data(rootdir="/home/hod/mag/data/OCT2017_preprocessed_128x128", balance_data=True, data_split=[200,25,25])
     cn.train()
 
     # cn.test()
