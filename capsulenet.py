@@ -84,9 +84,9 @@ class CapsNet():
         n_class = self.args['n_class']
 
         x = layers.Input(shape=input_shape)  
-        conv1 = layers.Conv2D(filters=256, kernel_size=9, strides=3, padding='valid', activation='relu', name='conv1')(x)
-        primarycaps = PrimaryCaps(dim_capsule=8, capsules=32, kernel_size=9, strides=3, padding='valid')(conv1)
-        caps1 = CapsuleLayer(num_capsule=n_class, dim_capsule=16, routings=self.args['routings'],
+        conv1 = layers.Conv2D(filters=32, kernel_size=9, strides=3, padding='valid', activation='relu', name='conv1')(x)
+        primarycaps = PrimaryCaps(dim_capsule=8, capsules=16, kernel_size=9, strides=3, padding='valid')(conv1)
+        caps1 = CapsuleLayer(num_capsule=n_class, dim_capsule=8, routings=self.args['routings'],
                                  name='caps1')(primarycaps)        
         out_caps = Length(name='outputs')(caps1)
 
@@ -137,7 +137,8 @@ if __name__ == "__main__":
         save_dir="/home/hod/mag/results/OCT2017_preprocessed_128x128", 
         input_shape=[128,128,1]
         )
-    cn.load_data(rootdir="/home/hod/mag/data/OCT2017_preprocessed_128x128", balance_data=True, data_split=[200,25,25])
+    # cn.load_data(rootdir="/home/hod/mag/data/OCT2017_preprocessed_128x128", balance_data=True, data_split=[100,8,8])
+    cn.load_data(rootdir="/home/hod/mag/data/OCT2017_preprocessed_128x128", balance_data=True)
     cn.train()
 
     # cn.test()
