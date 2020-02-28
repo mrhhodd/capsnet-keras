@@ -8,8 +8,6 @@ import numpy as np
 from tensorflow.keras import models, layers, optimizers, callbacks
 from tensorflow.keras import backend as K
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-# from tensorflow.keras.preprocessing.image import load_img, img_to_array
-# from tensorflow.keras.utils import to_categorical
 from layers import PrimaryCaps, CapsuleLayer, Length
 from utils import plot_log
 K.set_image_data_format('channels_last')
@@ -28,74 +26,26 @@ class CapsNet():
 
         self.model = self._create_model()
         os.makedirs(self.args['save_dir'], exist_ok=True)
-    
-    # def load_data(self, rootdir, balance_data=False, data_split=None):
-    #     data_sets = { "train": [],  "test": [],  "val": [] }
-    #     if balance_data:
-    #         classes = ["NORMAL", "CNV", "DME", "DRUSEN"]
-    #         test_val_size = 1000
-    #         all_files = {}
-    #         for class_name in classes:
-    #             all_files[class_name] = []
-    #         for (dirpath, _, filenames) in os.walk(rootdir):
-    #             for class_name in classes:
-    #                 all_files[class_name].extend([os.path.join(dirpath, filename) for filename in filenames if class_name in filename])
-
-    #         if data_split:
-    #             (train_count, val_count, test_count) = data_split
-    #         else:   
-    #             min_count = min([len(data_set) for data_set_name, data_set in all_files.items()])
-    #             val_count = int(test_val_size/len(classes))
-    #             test_count = int(test_val_size/len(classes))
-    #             train_count = min_count - val_count - test_count
-            
-    #         for class_name, files in all_files.items():
-    #             np.random.shuffle(files)
-    #             data_sets["val"].extend(files[:val_count])
-    #             data_sets["test"].extend(files[val_count:val_count+test_count])
-    #             data_sets["train"].extend(files[val_count+test_count:val_count+test_count+train_count])
-
-    #     else:
-    #         for data_set_name, data_set in data_sets.items():
-    #             files = []
-    #             for (dirpath, dirnames, filenames) in os.walk(os.path.join(rootdir, data_set_name)):
-    #                 files.extend([os.path.join(dirpath, filename) for filename in filenames])
-    #             np.random.shuffle(files)
-    #             data_set.extend(files)
-        
-    #     for data_set_name, data_set in data_sets.items():
-    #         print(f"Loading {len(data_set)} examples for {data_set_name}")
-    #         self.data[data_set_name] = self._get_data(data_set)
-    #         print(f"Finished loading examples for {data_set_name}")
-
-    # def _get_data(self, data_set):
-    #     temp_x = []
-    #     temp_y = []
-    #     for file_path in data_set:
-    #         img_arr = img_to_array(load_img(path=file_path, color_mode="grayscale"))
-    #         temp_x.append(img_arr)
-    #         class_no = self.class_map[os.path.basename(file_path).split("-")[0]]
-    #         temp_y.append(class_no)
-    #     x = np.array(temp_x).reshape(-1, *self.args['input_shape']).astype('float32') / 255
-    #     y = to_categorical(np.array(temp_y).astype('float32'), self.args['n_class'])
-    #     return {"x":x, "y":y}
 
     def load_weights(self, weights):
         self.model.load_weights(weights)
 
     def _create_model(self):
-        input_shape = self.args['input_shape']
-        n_class = self.args['n_class']
+        # x = layers.Input(shape=input_shape)  
+        # conv1 = layers.Conv2D(filters=256, kernel_size=9, strides=2, padding='valid', activation='relu', name='conv1')(x)
+        # primarycaps = PrimaryCaps(dim_capsule=8, capsules=32, kernel_size=9, strides=2, padding='valid')(conv1)
+        # caps1 = CapsuleLayer(num_capsule=n_class, dim_capsule=16, routings=self.args['routings'],
+        #                          name='caps1')(primarycaps)        
+        # out_caps = Length(name='outputs')(caps1)
 
-        x = layers.Input(shape=input_shape)  
-        conv1 = layers.Conv2D(filters=256, kernel_size=9, strides=2, padding='valid', activation='relu', name='conv1')(x)
-        primarycaps = PrimaryCaps(dim_capsule=8, capsules=32, kernel_size=9, strides=2, padding='valid')(conv1)
-        caps1 = CapsuleLayer(num_capsule=n_class, dim_capsule=16, routings=self.args['routings'],
-                                 name='caps1')(primarycaps)        
+        x = layers.Input(shape=self.args['input_shape'])  
+        conv1 = layers.Conv2D(filters=64, kernel_size=9, strides=2, padding='valid', activation='relu', name='conv1')(x)
+        primarycaps = PrimaryCaps(dim_capsule=4, capsules=16, kernel_size=9, strides=2, padding='valid')(conv1)
+        caps1 = CapsuleLayer(num_capsule=self.args['n_class'], dim_capsule=8, routings=self.args['routings'],
+                            name='caps1')(primarycaps)        
         out_caps = Length(name='outputs')(caps1)
-
-        model = models.Model(x, out_caps)
         model.summary()
+
         return model
 
     def margin_loss(self, y_true, y_pred):
@@ -140,7 +90,7 @@ class CapsNet():
         self.model.save_weights(self.args["save_dir"] + '/trained_model.h5')
         print('Trained model saved to \'%s/trained_model.h5\'' % self.args["save_dir"])
         
-        plot_log(args.save_dir + '/log.csv', show=True)
+        plot_log(self.args["save_dir"] + '/log.csv', show=True)
 
     def test(self):
         test_generator = self.data_gen.flow_from_directory(
@@ -149,10 +99,8 @@ class CapsNet():
             color_mode='grayscale', 
             batch_size=self.args["batch_size"], 
             shuffle=True)
-        test_x = self.data["test"]["x"]
-        test_y = self.data["test"]["y"]
         # pred_y = self.model.predict(test_x, batch_size=self.args["batch_size"])
-        pred_y = self.model.evaluate(test_generator)
+        self.model.evaluate(test_generator)
         # print('Test acc:', np.sum(np.argmax(pred_y, 1) == np.argmax(test_y, 1))/test_y.shape[0])
 
 
@@ -162,8 +110,5 @@ if __name__ == "__main__":
         data_dir="/home/hod/mag/data/OCT2017_preprocessed_128x128",
         input_shape=[128,128,1]
         )
-    # cn.load_data(rootdir="/home/hod/mag/data/OCT2017_preprocessed_128x128", balance_data=True, data_split=[100,8,8])
-    # cn.load_data(rootdir="/home/hod/mag/data/OCT2017_preprocessed_128x128", balance_data=True)
     cn.train()
-
     # cn.test()
