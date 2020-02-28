@@ -116,7 +116,7 @@ class CapsNet():
             color_mode='grayscale', 
             batch_size=self.args["batch_size"], 
             shuffle=True,
-            seed="123")
+            seed="random_seed")
 
         validation_generator = self.data_gen.flow_from_directory(
             directory=os.path.join(self.args["data_dir"], "val"), 

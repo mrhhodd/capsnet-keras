@@ -105,8 +105,6 @@ class PrimaryCaps(layers.Conv2D):
         
     def call(self, inputs):
         raw_outputs = super(PrimaryCaps, self).call(inputs)
-        print(raw_outputs.shape)
-        print(self.compute_output_shape(raw_outputs.shape)[1:])
         outputs = layers.Reshape(target_shape=self.compute_output_shape(raw_outputs.shape)[1:])(raw_outputs)
         return outputs
 
