@@ -44,6 +44,7 @@ class CapsNet():
         caps1 = CapsuleLayer(num_capsule=self.args['n_class'], dim_capsule=8, routings=self.args['routings'],
                             name='caps1')(primarycaps)        
         out_caps = Length(name='outputs')(caps1)
+        model = models.Model(x, out_caps)
         model.summary()
 
         return model
