@@ -83,8 +83,6 @@ class CapsuleLayer(layers.Layer):
             c = softmax(b, 1)
             # o = K.batch_dot(c, u_hat_vecs, [2, 2])
             o = tf.einsum('bin,binj->bij', c, u_hat_vecs)
-            if K.backend() == 'theano':
-                o = K.sum(o, axis=1)
             if i < self.routings - 1:
                 o = K.l2_normalize(o, -1)
                 # b = K.batch_dot(o, u_hat_vecs, [2, 3])
@@ -107,6 +105,8 @@ class PrimaryCaps(layers.Conv2D):
         
     def call(self, inputs):
         raw_outputs = super(PrimaryCaps, self).call(inputs)
+        print(raw_outputs.shape)
+        print(self.compute_output_shape(raw_outputs.shape)[1:])
         outputs = layers.Reshape(target_shape=self.compute_output_shape(raw_outputs.shape)[1:])(raw_outputs)
         return outputs
 
