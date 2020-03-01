@@ -38,8 +38,8 @@ class CapsNet():
         """
         model = models.Sequential(name='CapsNet')
         model.add(layers.Input(shape=self.args['input_shape']))
-        model.add(layers.Conv2D(filters=256, kernel_size=9, strides=3, padding='valid', activation='relu', name='conv1'))
-        model.add(PrimaryCaps(dim_capsule=8, capsules=32, kernel_size=9, strides=3, padding='valid', name='primary_caps'))
+        model.add(layers.Conv2D(filters=32, kernel_size=9, strides=3, padding='valid', activation='relu', name='conv1'))
+        model.add(PrimaryCaps(dim_capsule=8, capsules=4, kernel_size=9, strides=3, padding='valid', name='primary_caps'))
         model.add(CapsuleLayer(num_capsule=self.args['n_class'], dim_capsule=16, routings=self.args['routings'], name='caps1'))
         model.add(Length(name='outputs'))
 
