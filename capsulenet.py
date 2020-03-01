@@ -58,7 +58,7 @@ class CapsNet():
         lambd = 0.5
         L = y_true * (K.maximum(0., 0.9 - y_pred)) + \
             lambd * (1 - y_true) * (K.maximum(0., y_pred - 0.1))
-        return K.sum(K.sum(L, 1))
+        return K.mean(K.sum(L, 1))
 
 
 def train(network, data_gen, save_dir, epochs=30):
