@@ -4,6 +4,7 @@ Code is borrowing from: https://github.com/XifengGuo/CapsNet-Keras and https://g
 """
 
 import os
+from contextlib import redirect_stdout
 from tensorflow.keras import models, layers, optimizers, callbacks
 from tensorflow.keras import backend as K
 from layers import PrimaryCaps, CapsuleLayer, Length
