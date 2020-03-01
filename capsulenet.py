@@ -74,7 +74,7 @@ def train(network, data_gen, save_dir, epochs=30):
               ]
               )
 
-    _log_results(cn.model, save_dir, data_gen)
+    _log_results(network.model, save_dir, data_gen)
 
 
 def _log_results(model, log_dir, data_gen):
