@@ -31,17 +31,19 @@ class CapsNet():
         Model structure is a bit different than in the Hinton's paper - bigger images are generating much more parameters.
         Changes include:
             increased stride in the conv layer 1=>3
+            increased stride in the primary capsule layer 2=>3
             decreased number of filters in a conv layer 256 => 128
-            halved the number of capsules in both capsule layers, 32=>16 and 16=>8
+            halved the number of capsules in primary capsule layer, 32=>16
+            decreased dimensions of capsule in the capsule layer 16=>12
         """
         model = models.Sequential(name='CapsNet')
         model.add(layers.Input(shape=self.input_shape))
         model.add(layers.Conv2D(filters=128, kernel_size=9, strides=3,
                                 padding='valid', activation='relu', name='conv1'))
         model.add(PrimaryCaps(dim_capsule=8, capsules=16, kernel_size=9,
-                              strides=2, padding='valid', name='primary_caps'))
+                              strides=3, padding='valid', name='primary_caps'))
         model.add(CapsuleLayer(
-            num_capsule=self.n_class, dim_capsule=8, routings=self.routings, name='caps1'))
+            num_capsule=self.n_class, dim_capsule=12, routings=self.routings, name='caps1'))
         model.add(Length(name='outputs'))
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
