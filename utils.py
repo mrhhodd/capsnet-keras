@@ -22,6 +22,6 @@ def plot_log(filename, show=True):
     plt.legend()
     plt.title('Training and validation accuracy')
 
-    # fig.savefig('result/log.png')
+    fig.savefig('result/log.png')
     if show:
         plt.show()

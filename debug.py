@@ -1,3 +1,5 @@
+# This file is here for prototyping purposes
+
 import os
 from random import shuffle
 import numpy as np
