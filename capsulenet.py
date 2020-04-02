@@ -7,7 +7,7 @@ import os
 from contextlib import redirect_stdout
 from tensorflow.keras import models, layers, optimizers, callbacks
 from tensorflow.keras import backend as K
-from layers import PrimaryCaps, CapsuleLayer, Length
+from layers import PrimaryCaps, ConvCaps, ClassCapsules
 K.set_image_data_format('channels_last')
 
 
@@ -20,7 +20,6 @@ class CapsNet():
                  lr_decay=0.9):
         self.input_shape = input_shape
         self.n_class = n_class
-        self.routings = routings
         self.lr = lr
         self.lr_decay = lr_decay
         self.model = self._create_model()
@@ -36,31 +35,54 @@ class CapsNet():
             halved the number of capsules in primary capsule layer, 32=>16
             decreased dimensions of capsule in the capsule layer 16=>12
         """
-        model = models.Sequential(name='CapsNet')
-        model.add(layers.Input(shape=self.input_shape))
-        model.add(layers.Conv2D(filters=128, kernel_size=9, strides=3,
-                                padding='valid', activation='relu', name='conv1'))
-        model.add(PrimaryCaps(dim_capsule=8, capsules=16, kernel_size=9,
-                              strides=3, padding='valid', name='primary_caps'))
-        model.add(CapsuleLayer(
-            num_capsule=self.n_class, dim_capsule=12, routings=self.routings, name='caps1'))
-        model.add(Length(name='outputs'))
+        inputs = layers.Input(shape=self.input_shape)
+        # model.add(preprocessing_layer)
+        conv = layers.Conv2D(filters=32, kernel_size=5, strides=2, padding='same', activation='relu', name='conv1')(inputs)
+        [pc_act, pc_pose] = PrimaryCaps(capsules=32, kernel_size=1, strides=1, padding='valid', name='primCaps')(conv)
+        [cc1_act, cc1_pose] = ConvCaps(capsules=32, kernel_size=3, strides=2, padding='valid', routings=3, name='conv_caps_1')([pc_act, pc_pose])
+        [cc2_act, cc2_pose] = ConvCaps(capsules=32, kernel_size=3, strides=1, padding='valid', routings=3, name='conv_caps_2')([cc1_act, cc1_pose])
+        [fc_act, fc_pose] = ClassCapsules(capsules=self.n_class, routings=3, name='class_caps')([cc2_act, cc2_pose])
+        model = models.Model(inputs, fc_act, name='EM-CapsNet')
 
-        model.compile(optimizer=optimizers.Adam(lr=self.lr),
-                      loss=self.margin_loss,
-                      metrics=['accuracy'])
+        model.compile(optimizer=optimizers.Adam(lr=0.001),
+                        loss=self.spread_loss,
+                        metrics=['accuracy'])
+        
+        print(model.layers)
 
         model.summary()
         return model
 
-    def margin_loss(self, y_true, y_pred):
-        """
-        Implemented as described in the paper
-        """
-        lambd = 0.5
-        L = y_true * (K.maximum(0., 0.9 - y_pred)) + \
-            lambd * (1 - y_true) * (K.maximum(0., y_pred - 0.1))
-        return K.mean(K.sum(L, 1))
+    def spread_loss(self, y_true, y_pred):
+        print("spread loss", y_true.shape, y_pred.shape)
+        # global_step = tf.to_float(tf.compat.v1.train.get_or_create_global_step())
+        # m_min = 0.2
+        # m_delta = 0.79
+        # margin = (m_min 
+        #     + m_delta * tf.sigmoid(tf.minimum(10.0, global_step / 50000.0 - 4)))
+
+        # num_class = 4
+
+        # y = tf.one_hot(y, num_class, dtype=tf.float32)
+        
+        # # Get the score of the target class
+        # # (64, 1, 5)
+        # scores = tf.reshape(scores, shape=[batch_size, 1, num_class])
+        # # (64, 5, 1)
+        # y = tf.expand_dims(y, axis=2)
+        # # (64, 1, 5)*(64, 5, 1) = (64, 1, 1)
+        # at = tf.matmul(scores, y)
+        
+        # # Compute spread loss, paper eq (3)
+        # loss = tf.square(tf.maximum(0., m - (at - scores)))
+        
+        # # Sum losses for all classes
+        # # (64, 1, 5)*(64, 5, 1) = (64, 1, 1)
+        # # e.g loss*[1 0 1 1 1]
+        # loss = tf.matmul(loss, 1. - y)
+        
+        # # Compute mean
+        # loss = tf.reduce_mean(loss)
 
 
 def train(network, data_gen, save_dir, epochs=30):

@@ -118,5 +118,5 @@ data_gen = DataGen(
     target_size=(128,128), 
     color_mode="grayscale", 
     training_seed=123)
-train(network=cn, data_gen=data_gen, save_dir="/home/hod/mag/results/OCT2017_preprocessed_128x128", epochs=1)
+# train(network=cn, data_gen=data_gen, save_dir="/home/hod/mag/results/OCT2017_preprocessed_128x128", epochs=1)
 # cn.test()
