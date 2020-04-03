@@ -13,6 +13,7 @@ class PrimaryCaps(layers.Layer):
         super(PrimaryCaps, self).__init__(**kwargs)
 
     def build(self, input_shape):
+        # TODO: need weights_regularizer - as in IBM implementation!
         self.pose_weights = self.add_weight(name='pose',
                                             shape=(self.kernel_size,
                                                    self.kernel_size,
@@ -31,12 +32,16 @@ class PrimaryCaps(layers.Layer):
     def call(self, inputs):
         spatial_size = int(inputs.shape[1])
 
-        pose = K.conv2d(inputs, self.pose_weights, strides=(1, 1), padding=self.padding, data_format='channels_last')
-        pose = K.reshape(pose, shape=[spatial_size, spatial_size, self.capsules, 16])
+        pose = K.conv2d(inputs, self.pose_weights, strides=(
+            1, 1), padding=self.padding, data_format='channels_last')
+        pose = K.reshape(
+            pose, shape=[spatial_size, spatial_size, self.capsules, 16])
 
-        act = K.conv2d(inputs, self.act_weights, strides=(1, 1), padding=self.padding, data_format='channels_last')
+        act = K.conv2d(inputs, self.act_weights, strides=(1, 1),
+                       padding=self.padding, data_format='channels_last')
         act = activations.sigmoid(act)
-        act = K.reshape(act, shape=[spatial_size, spatial_size, self.capsules, 1])
+        act = K.reshape(
+            act, shape=[spatial_size, spatial_size, self.capsules, 1])
 
         return act, pose
 
@@ -47,96 +52,118 @@ class PrimaryCaps(layers.Layer):
 
 class BaseCaps(layers.Layer):
     def __init__(self, capsules, routings, **kwargs):
-        # currently only for Heigth==Weight = worth expanding?
+        # TODO: currently only for Heigth==Weight = worth expanding?
+        # TODO: add some exception for base class instantiation
         self.capsules = capsules
         self.routing_method = em_routing
         self.routings = routings
         super(BaseCaps, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        # Add check for the input shape!
-        # Add check for valid output size?
+        # TODO: Add check for the input shape!
+        # TODO: Add check for valid output size?
         [in_act_shape, in_pose_shape] = input_shape
         print(self.name, "input_act shape", in_act_shape)
         print(self.name, "input_pose shape", in_pose_shape)
         self.spatial_size_in = in_act_shape[0]
         self.in_capsules = in_act_shape[2]
         self.transformation_weights = self.add_weight(name='transformation_weights',
-                                                      shape=(1, self.kernel_size * self.kernel_size * self.in_capsules,
+                                                      shape=(1,
+                                                             self.kernel_size * self.kernel_size * self.in_capsules,
                                                              self.capsules,
-                                                             4,
-                                                             4),
+                                                             4, 4),
                                                       initializer='glorot_uniform',
                                                       trainable=True)
-        print(self.name, "transformation_weights shape", self.transformation_weights.shape)
-        # this should be initialized differently??
+        print(self.name, "transformation_weights shape",
+              self.transformation_weights.shape)
+        # TODO: this should be initialized differently??
+        # TODO: need weights_regularizer - as in IBM implementation!
         self.beta_v = self.add_weight(
-                name='beta_v',
-                shape=[1, 1, self.capsules, 1],
-                initializer='glorot_uniform',
-                trainable=True)
+            name='beta_v',
+            shape=[1, 1, self.capsules, 1],
+            initializer='glorot_uniform',
+            trainable=True)
         self.beta_a = self.add_weight(
-                name='beta_a',
-                shape=[1, 1, self.capsules],
-                initializer='glorot_uniform',
-                trainable=True)
+            name='beta_a',
+            shape=[1, 1, self.capsules],
+            initializer='glorot_uniform',
+            trainable=True)
         print(self.name, "beta shapes:", self.beta_v.shape, self.beta_a.shape)
+
+    def _generate_voting_map(self, size_in, size_out, kernel_size, stride):
+        voting_map = np.zeros((size_out ** 2, size_in ** 2))
+        parent_id = 0
+        valid_in = range(0, size_in - kernel_size + 1, stride)
+        assert(size_out == len(valid_in), "SIZES DOESNT FIT")
+        for row in valid_in:
+            for col in valid_in:
+                for kernel_row in range(0, kernel_size):
+                    start = (row + kernel_row) * size_in + col
+                    voting_map[parent_id][start:start + kernel_size] = 1.0
+                parent_id += 1
+        child_parent_indexes = np.where(voting_map)[1]
+        child_parent_map = np.reshape(
+            child_parent_indexes, [size_out ** 2, -1])
+
+        return voting_map, child_parent_map
 
 
 class ConvCaps(BaseCaps):
     def __init__(self, capsules, strides, padding, kernel_size, routings, **kwargs):
-        # currently only for Heigth==Weight = worth expanding?
+        #TODO: Allow for different height/width
         self.strides = strides
         self.padding = padding
         self.kernel_size = kernel_size
-        super(ConvCaps, self).__init__(capsules=capsules, routings=routings, **kwargs)
+        super(ConvCaps, self).__init__(
+            capsules=capsules, routings=routings, **kwargs)
 
     def build(self, input_shape):
         super(ConvCaps, self).build(input_shape)
         self.spatial_size_out = int((self.spatial_size_in - self.kernel_size) / self.strides + 1)
         self.voting_map, self.child_parent_map = self._generate_voting_map(
-                self.spatial_size_in,
-                self.spatial_size_out,
-                self.kernel_size)
+            self.spatial_size_in,
+            self.spatial_size_out,
+            self.kernel_size,
+            self.strides)
         print(self.name, "voting_map shape", self.voting_map.shape)
-
-    def _generate_voting_map(self, size_in, size_out, kernel_size):
-        voting_map = np.zeros((size_out ** 2, size_in ** 2))
-        for parent_id in range(0, size_out ** 2):
-            for kernel_row in range(0, kernel_size):
-                start = (kernel_row * size_in) + (parent_id % size_out) + (parent_id // size_out * size_in)
-                voting_map[parent_id][start:start + kernel_size] = 1.0
-
-        tmp = np.where(voting_map)
-        child_parent_map = np.reshape(tmp[1], [size_out ** 2, -1])
-
-        return voting_map, child_parent_map
 
     def call(self, inputs):
         [input_act, input_pose] = inputs
         print(self.name, "child_parent_map shape", self.child_parent_map.shape)
-        input_pose = K.reshape(input_pose, [self.spatial_size_in ** 2, self.in_capsules, 4, 4])
-        input_act = K.reshape(input_act, [self.spatial_size_in ** 2, self.in_capsules, 1])
+        input_pose = K.reshape(
+            input_pose, [self.spatial_size_in ** 2, self.in_capsules, 4, 4])
+        input_act = K.reshape(
+            input_act, [self.spatial_size_in ** 2, self.in_capsules, 1])
 
         # input_pose_tiled = K.tile(input_pose_tiled, [self.spatial_size_out**2, 1, 1, 1, 1])
         print(self.name, "input_pose reshaped", input_pose.shape)
-        input_pose_filtered = tf.gather(input_pose, self.child_parent_map, axis=0)
-        input_act_filtered = tf.gather(input_act, self.child_parent_map, axis=0)
+        input_pose_filtered = tf.gather(
+            input_pose, self.child_parent_map, axis=0)
+        input_act_filtered = tf.gather(
+            input_act, self.child_parent_map, axis=0)
         print(self.name, "input_pose filtered", input_pose_filtered.shape)
-        input_pose_tiled = K.reshape(input_pose_filtered, [self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 4, 4])
-        input_act_tiled = K.reshape(input_act_filtered, [self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 1])
-        input_pose_tiled = K.tile(input_pose_tiled, [1, 1, self.capsules, 1, 1])
+        input_pose_tiled = K.reshape(input_pose_filtered, [
+                                     self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 4, 4])
+        input_act_tiled = K.reshape(input_act_filtered, [
+                                    self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 1])
+        input_pose_tiled = K.tile(
+            input_pose_tiled, [1, 1, self.capsules, 1, 1])
         input_act_tiled = K.tile(input_act_tiled, [1, 1, self.capsules, 1])
         print(self.name, "input_pose_tiled", input_pose_tiled.shape)
-        weights_tiled = K.tile(self.transformation_weights, [self.spatial_size_out ** 2, 1, 1, 1, 1])
+        weights_tiled = K.tile(self.transformation_weights, [
+                               self.spatial_size_out ** 2, 1, 1, 1, 1])
         print(self.name, "weights tiled shape", weights_tiled.shape)
         # input_pose_filtered = tf.squeeze(input_pose_filtered)
         votes = tf.matmul(input_pose_tiled, weights_tiled)
-        votes = K.reshape(votes, (self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, self.capsules, 16))
+        votes = K.reshape(votes, (self.spatial_size_out ** 2,
+                                  self.kernel_size ** 2 * self.in_capsules, self.capsules, 16))
         print(self.name, "votes shape", votes.shape)
-        out_act, out_pose = self.routing_method(input_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
-        out_act = K.reshape(out_act, [self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
-        out_pose = K.reshape(out_pose, [self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
+        out_act, out_pose = self.routing_method(
+            input_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
+        out_act = K.reshape(
+            out_act, [self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
+        out_pose = K.reshape(
+            out_pose, [self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
         # print("OUT_SHAPE:", self.compute_output_shape(input.shape))
         return out_act, out_pose
 
@@ -152,42 +179,67 @@ class ClassCapsules(BaseCaps):
 
     def build(self, input_shape):
         super(ClassCapsules, self).build(input_shape)
-        self.spatial_size_out = self.spatial_size_in
+        self.spatial_size_out = 1
+        self.voting_map, self.child_parent_map = self._generate_voting_map(
+            self.spatial_size_in,
+            self.spatial_size_out,
+            self.spatial_size_in,
+            1)
+        print(self.name, "child_parent_map shape", self.child_parent_map.shape)
+
 
     def call(self, inputs):
         [input_act, input_pose] = inputs
-        input_pose_tiled = K.reshape(input_pose, [self.spatial_size_out ** 2, self.in_capsules, 1, 4, 4])
-        input_act_tiled = K.reshape(input_act, [self.spatial_size_out ** 2, self.in_capsules, 1, 1])
-        input_pose_tiled = K.tile(input_pose_tiled, [1, 1, self.capsules, 1, 1])
-        input_act_tiled = K.tile(input_act_tiled, [1, 1, self.capsules, 1])
+        input_pose = K.reshape(
+            input_pose, [self.spatial_size_in ** 2, self.in_capsules, 1, 4, 4])
+        input_act = K.reshape(
+            input_act, [self.spatial_size_in ** 2, self.in_capsules, 1, 1])
+        print(self.name, "input_act", input_act.shape)
+        print(self.name, "input_pose", input_pose.shape)
+        input_pose_filtered = tf.gather(
+            input_pose, self.child_parent_map, axis=0)
+        input_act_filtered = tf.gather(
+            input_act, self.child_parent_map, axis=0)
+        print(self.name, "input_act_filtered", input_act_filtered.shape)
+        print(self.name, "input_pose_filtered", input_pose_filtered.shape)
+        input_pose_filtered = K.reshape(
+            input_pose_filtered, [1, self.spatial_size_in ** 2 * self.in_capsules, 1, 4, 4])
+        input_act_filtered = K.reshape(
+            input_act_filtered, [1, self.spatial_size_in ** 2 * self.in_capsules, 1, 1])
+        input_pose_tiled = K.tile(
+            input_pose_filtered, [1, 1, self.capsules, 1, 1])
+        input_act_tiled = K.tile(input_act_filtered, [1, 1, self.capsules, 1])
         print(self.name, "input_pose_tiled", input_pose_tiled.shape)
-        weights_tiled = K.tile(self.transformation_weights, [self.spatial_size_out ** 2, 1, 1, 1, 1])
+        weights_tiled = K.tile(self.transformation_weights, [1, self.spatial_size_in ** 2, 1, 1, 1])
         print(self.name, "weights tiled shape", weights_tiled.shape)
         votes = tf.matmul(input_pose_tiled, weights_tiled)
         print(self.name, "votes shape", votes.shape)
         votes = self._coord_addition(votes)
-        votes = K.reshape(votes, (self.spatial_size_out ** 2, self.in_capsules, self.capsules, 16))
+        votes = K.reshape(votes, (1, self.spatial_size_in ** 2 * self.in_capsules, self.capsules, 16))
         print(self.name, "votes reshaped shape", votes.shape)
-        out_act, out_pose = self.routing_method(input_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
-        out_act = K.reshape(out_act, [self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
-        out_pose = K.reshape(out_pose, [self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
-        # tf.summary.histogram("activation_out", activation_out)
-        # print("OUT_SHAPE:", self.compute_output_shape(input.shape))
+        out_act, out_pose = self.routing_method(
+            input_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
+        out_act = K.reshape(out_act, [self.capsules, 1])
+        out_pose = K.reshape(out_pose, [self.capsules, 16])
         return out_act, out_pose
 
     def _coord_addition(self, votes):
         # Only considering quadratic images for now!
-        votes = K.reshape(votes, (self.spatial_size_out, self.spatial_size_out, self.in_capsules, self.capsules, 16))
+        votes = K.reshape(votes, (self.spatial_size_in,
+                                  self.spatial_size_in, self.in_capsules, self.capsules, 16))
 
-        offset_vals = (np.arange(self.spatial_size_out) + 0.5) / float(self.spatial_size_out)
+        offset_vals = (np.arange(self.spatial_size_in) +
+                       0.5) / float(self.spatial_size_in)
 
-        w_offset = np.zeros([self.spatial_size_out, 16])
-        w_offset[:, 3] = offset_vals  # first val of the righmost column - as in papepr
-        w_offset = np.reshape(w_offset, [1, self.spatial_size_out, 1, 1, 16])
+        w_offset = np.zeros([self.spatial_size_in, 16])
+        # first val of the righmost column - as in papepr
+        w_offset[:, 3] = offset_vals
+        w_offset = np.reshape(w_offset, [1, self.spatial_size_in, 1, 1, 16])
 
-        h_offset = np.zeros([self.spatial_size_out, 16])
-        h_offset[:, 7] = offset_vals  # second val of the righmost column - as in papepr
-        h_offset = np.reshape(h_offset, [self.spatial_size_out, 1, 1, 1, 16])
+        h_offset = np.zeros([self.spatial_size_in, 16])
+        # second val of the righmost column - as in papepr
+        h_offset[:, 7] = offset_vals
+        h_offset = np.reshape(h_offset, [self.spatial_size_in, 1, 1, 1, 16])
 
         # Combine w and h offsets using broadcasting
         offset = w_offset + h_offset
@@ -210,9 +262,11 @@ def em_routing(input_act, votes, beta_a, beta_v, routings):
     # print(self.name, "routing", "R matrix shape", rr.shape)
     for i in range(0, routings):
         lambd = 0.01 * (1 - tf.pow(0.95, tf.cast(i, tf.float32)))
-        output_act, means, variance = _routing_m_step(input_act, rr, votes, lambd, beta_a, beta_v)
+        output_act, means, variance = _routing_m_step(
+            input_act, rr, votes, lambd, beta_a, beta_v)
         if i < routings - 1:
             rr = _routing_e_step(means, variance, output_act, votes)
+    print("em_routing", "output_act shape", output_act.shape)
     return output_act, means
 
 
@@ -224,13 +278,14 @@ def _routing_m_step(input_act, rr, votes, lambd, beta_a, beta_v):
     rr_sum = tf.reduce_sum(rr_tiled, axis=1, keepdims=True)
     # print(self.name, "m_routing", "rr_sum shape", rr_sum.shape)
     means = tf.divide(
-            tf.reduce_sum(rr_tiled * votes, axis=1, keepdims=True),
-            rr_sum
+        tf.reduce_sum(rr_tiled * votes, axis=1, keepdims=True),
+        rr_sum
     )
     # print(self.name, "m_routing", "means shape", means.shape)
 
     std_dev = tf.sqrt(
-            tf.reduce_sum(rr_tiled * (votes - means), axis=1, keepdims=True) / rr_sum
+        tf.reduce_sum(rr_tiled * (votes - means),
+                      axis=1, keepdims=True) / rr_sum
     )
     # print(self.name, "m_routing", "std_dev shape", std_dev.shape)
     # check if other epsilons are needed
@@ -247,10 +302,10 @@ def _routing_e_step(means, std_dev, output_act, votes):
     # we are counting log of probabilities
     # we can discard PI beacuse i tak sie skroci
     prob_exp = - tf.reduce_sum(
-            tf.square(votes - means) / (2 * tf.square(std_dev)), axis=-1, keepdims=True
+        tf.square(votes - means) / (2 * tf.square(std_dev)), axis=-1, keepdims=True
     )
     prob_main = - tf.reduce_sum(
-            K.log(std_dev + K.epsilon()), axis=-1, keepdims=True
+        K.log(std_dev + K.epsilon()), axis=-1, keepdims=True
     )
     prob = prob_main + prob_exp
     # print(self.name, "e_routing", "prob shape", prob.shape)

@@ -55,6 +55,7 @@ class CapsNet():
 
     def spread_loss(self, y_true, y_pred):
         print("spread loss", y_true.shape, y_pred.shape)
+        return 1.0
         # global_step = tf.to_float(tf.compat.v1.train.get_or_create_global_step())
         # m_min = 0.2
         # m_delta = 0.79
