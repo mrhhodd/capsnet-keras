@@ -5,32 +5,45 @@ Code is borrowing from: https://github.com/XifengGuo/CapsNet-Keras and https://g
 
 import os
 from contextlib import redirect_stdout
+import tensorflow as tf
 from tensorflow.keras import models, layers, optimizers, callbacks, regularizers
 from tensorflow.keras import backend as K
 from layers import PrimaryCaps, ConvCaps, ClassCapsules
 K.set_image_data_format('channels_last')
 
 
+# TODO: Spread loss function
+# TODO: data normalization
+# TODO: Regularizations?
+# TODO: Analyze the problems that Gritzman mentions!
+# TODO: Do we need normalization in the m_step?
+
+# TODO: ask about the logarithms
+# TODO: docstrings?
+# TODO: mypy
+# TODO: all shapes in tuples
+# TODO: all function arguments with names
+# TODO: currently only for Heigth==Weight = worth expanding?
+# TODO: add some exception for base class instantiation
+# TODO: check for proper input shape
+# TODO: preety formating
+
 class CapsNet():
     def __init__(self,
                  input_shape=[32, 32, 1],
                  n_class=4,
-                 routings=3,
-                 lr=0.001,
-                 lr_decay=0.9):
+                 routings=3):
         self.input_shape = input_shape
         self.n_class = n_class
-        self.lr = lr
-        self.lr_decay = lr_decay
         self.model = self._create_model()
 
     def _create_model(self):
-        # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss."
+        # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
+        # We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96.""
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
         reg = regularizers.l2(0.0000002)
 
         inputs = layers.Input(shape=self.input_shape)
-        # model.add(preprocessing_layer)
         conv = layers.Conv2D(filters=32, kernel_size=5, strides=2,
                              padding='same', activation='relu', name='conv1')(inputs)
         [pc_act, pc_pose] = PrimaryCaps(
@@ -54,36 +67,18 @@ class CapsNet():
 
     def spread_loss(self, y_true, y_pred):
         print("spread loss", y_true.shape, y_pred.shape)
-        return 1.0
-        # global_step = tf.to_float(tf.compat.v1.train.get_or_create_global_step())
-        # m_min = 0.2
-        # m_delta = 0.79
-        # margin = (m_min
-        #     + m_delta * tf.sigmoid(tf.minimum(10.0, global_step / 50000.0 - 4)))
+        # return 1.0
+        global_step = tf.cast(tf.compat.v1.train.get_or_create_global_step(), dtype=tf.float32)
+        m_min = 0.2
+        m_delta = 0.79
+        print("current global step", global_step)
 
-        # num_class = 4
-
-        # y = tf.one_hot(y, num_class, dtype=tf.float32)
-
-        # # Get the score of the target class
-        # # (64, 1, 5)
-        # scores = tf.reshape(scores, shape=[batch_size, 1, num_class])
-        # # (64, 5, 1)
-        # y = tf.expand_dims(y, axis=2)
-        # # (64, 1, 5)*(64, 5, 1) = (64, 1, 1)
-        # at = tf.matmul(scores, y)
-
-        # # Compute spread loss, paper eq (3)
-        # loss = tf.square(tf.maximum(0., m - (at - scores)))
-
-        # # Sum losses for all classes
-        # # (64, 1, 5)*(64, 5, 1) = (64, 1, 1)
-        # # e.g loss*[1 0 1 1 1]
-        # loss = tf.matmul(loss, 1. - y)
-
-        # # Compute mean
-        # loss = tf.reduce_mean(loss)
-
+        # TODO: wtf ta wartosc
+        margin = (m_min
+            + m_delta * tf.sigmoid(tf.minimum(10.0, global_step / 50000.0 - 4)))
+            
+        loss = tf.square(tf.maximum(0, margin - (at - ai)))
+        return 
 
 def train(network, data_gen, save_dir, epochs=30):
     os.makedirs(save_dir, exist_ok=True)

@@ -3,19 +3,6 @@ import numpy as np
 from tensorflow.keras import backend as K
 from tensorflow.keras import layers, activations
 
-# TODO: Analyze the problems that Gritzman mentions!
-# TODO: Do we need normalization in the m_step?
-
-# TODO: ask about the logarithms
-# TODO: docstrings?
-# TODO: mypy
-# TODO: all shapes in tuples
-# TODO: all function arguments with names
-# TODO: currently only for Heigth==Weight = worth expanding?
-# TODO: add some exception for base class instantiation
-# TODO: check for proper input shape
-# TODO: preety formating
-
 
 class PrimaryCaps(layers.Layer):
     def __init__(self, capsules, strides, padding, kernel_size, weights_reg, **kwargs):
@@ -33,6 +20,7 @@ class PrimaryCaps(layers.Layer):
                                                    input_shape[-1],
                                                    self.capsules * 16),
                                             initializer='glorot_uniform',
+                                            regularizer=self.weights_regularizer,
                                             trainable=True)
         self.act_weights = self.add_weight(name='act',
                                            shape=(self.kernel_size,
@@ -40,6 +28,7 @@ class PrimaryCaps(layers.Layer):
                                                   input_shape[-1],
                                                   self.capsules),
                                            initializer='glorot_uniform',
+                                           regularizer=self.weights_regularizer,
                                            trainable=True)
 
     def call(self, inputs):
@@ -85,11 +74,13 @@ class BaseCaps(layers.Layer):
             name='beta_v',
             shape=(1, 1, self.capsules, 1),
             initializer='glorot_uniform',
+            regularizer=self.weights_regularizer,
             trainable=True)
         self.beta_a = self.add_weight(
             name='beta_a',
             shape=(1, 1, self.capsules),
             initializer='glorot_uniform',
+            regularizer=self.weights_regularizer,
             trainable=True)
 
     def _generate_voting_map(self, size_in, size_out, kernel_size, stride):
@@ -131,6 +122,7 @@ class ConvCaps(BaseCaps):
                                                              self.capsules,
                                                              4, 4),
                                                       initializer='glorot_uniform',
+                                                      regularizer=self.weights_regularizer,
                                                       trainable=True)
 
         self.voting_map, self.child_parent_map = self._generate_voting_map(
@@ -212,6 +204,8 @@ class ClassCapsules(BaseCaps):
                                                              self.capsules,
                                                              4, 4),
                                                       initializer='glorot_uniform',
+                                                      regularizer=self.weights_regularizer,
+
                                                       trainable=True)
 
         self.voting_map, self.child_parent_map = self._generate_voting_map(
@@ -267,7 +261,7 @@ class ClassCapsules(BaseCaps):
         # out_pose shape: [out_capsules, 4, 4]
         out_act, out_pose = self.routing_method(
             in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
-        out_act = K.reshape(out_act, [self.capsules, 1])
+        out_act = K.reshape(out_act, [self.capsules])
         out_pose = K.reshape(out_pose, [self.capsules, 4, 4])
 
         return out_act, out_pose
@@ -310,7 +304,7 @@ class ClassCapsules(BaseCaps):
 
     def compute_output_shape(self, input_shape):
         batch_size = input_shape[0][0]
-        return ((batch_size + (self.capsules, 1)), (batch_size + (self.capsules, 4, 4)))
+        return ((batch_size, self.capsules), (batch_size, self.capsules, 4, 4))
 
 
 def em_routing(in_act, votes, beta_a, beta_v, routings):
