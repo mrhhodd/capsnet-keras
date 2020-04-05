@@ -84,7 +84,7 @@ class BaseCaps(layers.Layer):
         voting_map = np.zeros((size_out ** 2, size_in ** 2))
         parent_id = 0
         valid_in = range(0, size_in - kernel_size + 1, stride)
-        assert(size_out == len(valid_in), "SIZES DOESNT FIT")
+        assert size_out == len(valid_in), "SIZES DOESNT FIT"
         for row in valid_in:
             for col in valid_in:
                 for kernel_row in range(0, kernel_size):

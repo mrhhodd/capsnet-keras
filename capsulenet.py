@@ -17,6 +17,7 @@ K.set_image_data_format('channels_last')
 # TODO: optimizer? expontential decay?
 # TODO: simple data normalization
 # TODO: Regularizations?
+# TODO: How to test? divide data into 10 data sets, then run K-fold validation for different validation splits?
 
 # TODO: Do we need normalization in the m_step?
 # TODO: Analyze the problems that Gritzman mentions!
@@ -112,7 +113,7 @@ def train(network, data_gen, save_dir, epochs=30):
             # We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96.""
             # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
             callbacks.LearningRateScheduler(
-                schedule=lambda epoch: network.lr * network.lr_decay ** K.maximum(20000, epoch)),
+                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch)),
             callbacks.LambdaCallback(
                 on_batch_begin=network.increment_global_step)
         ]
