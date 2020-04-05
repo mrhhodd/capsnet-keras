@@ -350,7 +350,7 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     rr_tiled = K.tile(rr_scaled, [1, 1, 1, 1, 16])
 
     # Compute the sum of all input capsules in rr matrix
-    # rr_sum shape: [batch_size, 1, out_capsules, 16]
+    # rr_sum shape: [batch_size, 1, 1, out_capsules, 16]
     rr_sum = tf.reduce_sum(rr_tiled, axis=2, keepdims=True)
 
     # M_step 3 - compute means for each parent capsule
@@ -375,12 +375,12 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # out_act shape: [batch_size, out_height*out_width, 1, out_capsules, 1]
     # TODO: Do we need normalization here?
     out_act = K.sigmoid(lambd * (beta_a - tf.reduce_sum(costs, axis=-1)))
-    out_act = K.reshape(out_act, tf.shape(rr_scaled)[:] + [1])
+    out_act = K.expand_dims(out_act, -1)
 
     return out_act, means, std_dev
 
 
-def _routing_e_step(means, std_dev, output_act, votes):
+def _routing_e_step(means, std_dev, out_act, votes):
     # E_step 2 - compute probabilities
     # we are using logarithms to simplify the calculations
     # prob shape: [batch_size, 1, 1, out_capsules, 1]
@@ -394,7 +394,6 @@ def _routing_e_step(means, std_dev, output_act, votes):
 
     # E_step 3 - recompute the R matrix values
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
-    zz = K.log(output_act + K.epsilon()) + prob
+    zz = K.log(out_act + K.epsilon()) + prob
     rr = K.softmax(zz, axis=3)
-
     return rr
