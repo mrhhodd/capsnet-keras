@@ -106,7 +106,7 @@ def train(network, data_gen, save_dir, epochs=30):
     network.model.fit(
         data_gen.training_generator,
         epochs=epochs,
-        validation_data=data_gen.test_generator,
+        validation_data=data_gen.validation_generator,
         callbacks=[
             callbacks.CSVLogger(f"{save_dir}/log.csv"),
             # We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96.""
