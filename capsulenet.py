@@ -98,9 +98,7 @@ class CapsNet():
         a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
         a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1)
-        print("######## SPREAD LOSS", y_pred, y_true, a_t)
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
-        print("######## SPREAD LOSS", loss, K.sum(loss))
         return K.mean(K.sum(loss))
 
 

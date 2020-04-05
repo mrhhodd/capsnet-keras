@@ -375,7 +375,7 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # out_act shape: [batch_size, out_height*out_width, 1, out_capsules, 1]
     # TODO: Do we need normalization here?
     out_act = K.sigmoid(lambd * (beta_a - tf.reduce_sum(costs, axis=-1)))
-    out_act = K.reshape(out_act, tf.shape(out_act) + [1])
+    out_act = K.reshape(out_act, tf.shape(rr_scaled)[:] + [1])
 
     return out_act, means, std_dev
 
