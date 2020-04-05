@@ -5,12 +5,11 @@ from tensorflow.keras import layers, activations
 
 
 class PrimaryCaps(layers.Layer):
-    def __init__(self, capsules, strides, padding, kernel_size, weights_reg, **kwargs):
+    def __init__(self, capsules, strides, padding, kernel_size, **kwargs):
         self.capsules = capsules
         self.strides = strides
         self.padding = padding
         self.kernel_size = kernel_size
-        self.weights_regularizer = weights_reg
         super(PrimaryCaps, self).__init__(**kwargs)
 
     def build(self, input_shape):
@@ -20,7 +19,6 @@ class PrimaryCaps(layers.Layer):
                                                    input_shape[-1],
                                                    self.capsules * 16),
                                             initializer='glorot_uniform',
-                                            regularizer=self.weights_regularizer,
                                             trainable=True)
         self.act_weights = self.add_weight(name='act',
                                            shape=(self.kernel_size,
@@ -28,7 +26,6 @@ class PrimaryCaps(layers.Layer):
                                                   input_shape[-1],
                                                   self.capsules),
                                            initializer='glorot_uniform',
-                                           regularizer=self.weights_regularizer,
                                            trainable=True)
 
     def call(self, inputs):
