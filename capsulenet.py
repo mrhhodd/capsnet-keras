@@ -95,11 +95,13 @@ class CapsNet():
         m_delta = 0.79
         margin = (m_min
                   + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / 50000.0 - 4)))
-        a_i = (1 - y_true)*y_pred
+        a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
-        a_t = K.sum(y_pred*y_true)
+        a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1)
+        print("######## SPREAD LOSS", y_pred, y_true, a_t)
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
-        return K.sum(loss)
+        print("######## SPREAD LOSS", loss, K.sum(loss))
+        return K.mean(K.sum(loss))
 
 
 def train(network, data_gen, save_dir, epochs=30):

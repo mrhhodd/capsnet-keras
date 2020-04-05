@@ -3,7 +3,7 @@
 from capsulenet import CapsNet, train
 from data_generators import DataGen
 
-cn = CapsNet(input_shape=[32,32,1])
+cn = CapsNet(input_shape=(32,32,1))
 
 data_gen = DataGen(
     batch_size=32, 
