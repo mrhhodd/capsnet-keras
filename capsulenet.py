@@ -53,8 +53,8 @@ class CapsNet():
         self.lr_decay = lr_decay
         self.model = self._create_model()
 
-    def increment_global_step(self):
-        self.global_step += 1 
+    def increment_global_step(self, batch, logs):
+        self.global_step = batch
 
     def _create_model(self):
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
