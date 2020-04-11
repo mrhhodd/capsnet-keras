@@ -260,7 +260,6 @@ class ClassCapsules(BaseCaps):
             in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
         out_act = K.reshape(out_act, [-1, self.capsules])
         out_pose = K.reshape(out_pose, [-1, self.capsules, 4, 4])
-
         return out_act, out_pose
 
     def _coord_addition(self, votes):

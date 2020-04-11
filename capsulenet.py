@@ -60,7 +60,6 @@ class CapsNet():
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
         reg = regularizers.l2(0.0000002)
-
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(filters=32, kernel_size=5, strides=2,
                              padding='same', activation='relu', name='conv1')(inputs)
@@ -84,17 +83,21 @@ class CapsNet():
         return model
 
     def spread_loss(self, y_true, y_pred):
-        print("######## Current global step", self.global_step)
-        print("######## SPREAD LOSS", y_true, y_pred)
-
+        # print("######## Current global step", self.global_step)
+        # tf.print("######## SPREAD LOSS", y_true, y_pred)#,*args, **kwargs)
+        tf.print(y_true)
+        print("##########################HEHRHRH")
+        tf.print(y_pred)
         # "The margin that we set is: 
         # margin = 0.2 + .79 * tf.sigmoid(tf.minimum(10.0, step / 50000.0 - 4))
         # where step is the training step. We trained with batch size of 64."
         # https://openreview.net/forum?id=HJWLfGWRb
         m_min = 0.2
         m_delta = 0.79
+        # p = 50000.0 * 64.0 / self.batch_size
         margin = (m_min
-                  + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / 50000.0 - 4)))
+                    # + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / 50000.0 - 4)))
+                    + m_delta * K.sigmoid(K.minimum(10.0, 1 / 50000.0 - 4)))
         a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
         a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1)
