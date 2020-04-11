@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.keras import backend as K
 from tensorflow.keras import layers, activations
-
+import time
 
 class PrimaryCaps(layers.Layer):
     def __init__(self, capsules, strides, padding, kernel_size, **kwargs):
@@ -31,6 +31,7 @@ class PrimaryCaps(layers.Layer):
     def call(self, inputs):
         # # tf.print("in_act primary caps", inputs[0])
         # # tf.print("in_act primary caps", inputs[0])
+        t0 = time.time()
         spatial_size = int(inputs.shape[1])
 
         pose = K.conv2d(inputs, self.pose_weights, strides=(1, 1),
@@ -47,6 +48,9 @@ class PrimaryCaps(layers.Layer):
             act, shape=(-1, spatial_size, spatial_size, self.capsules, 1))
 
         # # tf.print("out_act primary caps", act[0])
+
+        code_block
+        tf.print("\n TIME", self.name, time.time()-t0)
         return act, pose
 
     def compute_output_shape(self, input_shape):
@@ -136,6 +140,7 @@ class ConvCaps(BaseCaps):
         # child-parent map shape: [out_height*out_width, kernel_size^2]
 
     def call(self, inputs):
+        to = time.time()
         [in_act, in_pose] = inputs
         # # tf.print("in_act conv caps", in_act[0])
 
@@ -190,6 +195,7 @@ class ConvCaps(BaseCaps):
         out_pose = K.reshape(
             out_pose, [-1, self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
         # # tf.print("out_act conv caps", out_act[0])
+        tf.print("\n TIME", self.name, time.time()-t0)
         return out_act, out_pose
 
     def compute_output_shape(self, input_shape):
@@ -224,6 +230,7 @@ class ClassCapsules(BaseCaps):
             stride=1)
 
     def call(self, inputs):
+        t0=time.time()
         [in_act, in_pose] = inputs
         # # tf.print("IN_ACT capsule_caps", in_act[0])
         # flatten 2D capsule array to 1D vector
@@ -273,6 +280,7 @@ class ClassCapsules(BaseCaps):
         out_act = K.reshape(out_act, [-1, self.capsules])
         out_pose = K.reshape(out_pose, [-1, self.capsules, 4, 4])
         # # tf.print("OUT_ACT return", out_act[0])
+        tf.print("\n TIME", self.name, time.time()-t0)
         return out_act, out_pose
 
     def _coord_addition(self, votes):
@@ -318,6 +326,7 @@ class ClassCapsules(BaseCaps):
 
 
 def em_routing(in_act, votes, beta_a, beta_v, routings):
+    t0=time.time()
     batch_size = tf.shape(votes)[0]
     # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
     # initialize R matrix with 1/out_capsules
@@ -341,15 +350,20 @@ def em_routing(in_act, votes, beta_a, beta_v, routings):
         # out_act shape
         # means shape
         # std_devs shape
+        t1=time.time
         out_act, means, std_devs = _routing_m_step(
             in_act, rr, votes, lambd, beta_a, beta_v)
+        tf.print("\n TIME", " m_step routing", time.time()-t1)
 
         # Skip the e_step for last iterations - no point in running it
         if i < routings - 1:
             # readjust the rr values for the next step
+            t1=time.time
             rr = _routing_e_step(means, std_devs, out_act, votes)
+            tf.print("\n TIME", " e_step routing", time.time()-t1)
 
     # return out_act and means for parent capsule poses
+    tf.print("\n TIME", "routing", time.time()-t0)
     return out_act, means
 
 
