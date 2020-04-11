@@ -29,7 +29,7 @@ class PrimaryCaps(layers.Layer):
                                            trainable=True)
 
     def call(self, inputs):
-        tf.print("in_act primary caps", tf.maximum(inputs[0]))
+        tf.print("in_act primary caps", inputs[0])
         tf.print("in_act primary caps", inputs[0])
         spatial_size = int(inputs.shape[1])
 
