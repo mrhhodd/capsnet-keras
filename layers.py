@@ -386,14 +386,14 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
 
     # M_step 3 - compute means for each parent capsule
     # means shape: [batch_size, 1, 1, out_capsules, 16]
-    means = tf.reduce_sum(rr_tiled * votes, axis=2,
+    means = tf.reduce_sum(tf.multiply(rr_tiled, votes), axis=2,
                           keepdims=True) / (rr_sum + K.epsilon())
     tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # M_step 4 - compute std_dev for each parent capsule
     # std_dev shape: [batch_size, 1, 1, out_capsules, 16]
     std_dev = tf.sqrt(
-        tf.reduce_sum(rr_tiled * tf.square(votes - means), axis=2,
+        tf.reduce_sum(tf.multiply(rr_tiled, tf.square(votes - means)), axis=2,
                       keepdims=True) / (rr_sum + K.epsilon())
     )
     tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
