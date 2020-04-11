@@ -373,22 +373,22 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     rr_scaled = tf.multiply(rr, in_act)
     # tf.print("_routing_m_step in_act caps", in_act[0])
     # tf.print("_routing_m_step rr caps", rr[0])
-    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
+    tf.print("\n TIME", "0 m_step routing", tf.constant(time.time()-t1));t1=time.time()
     # replicate it for each pose value
     # rr_tiled shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules,16]
     rr_tiled = K.tile(rr_scaled, [1, 1, 1, 1, 16])
-    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
+    tf.print("\n TIME", "1 m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # Compute the sum of all input capsules in rr matrix
     # rr_sum shape: [batch_size, 1, 1, out_capsules, 16]
     rr_sum = tf.reduce_sum(rr_tiled, axis=2, keepdims=True)
-    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
+    tf.print("\n TIME", "2 m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # M_step 3 - compute means for each parent capsule
     # means shape: [batch_size, 1, 1, out_capsules, 16]
     means = tf.reduce_sum(tf.multiply(rr_tiled, votes), axis=2,
                           keepdims=True) / (rr_sum + K.epsilon())
-    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
+    tf.print("\n TIME", "3 m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # M_step 4 - compute std_dev for each parent capsule
     # std_dev shape: [batch_size, 1, 1, out_capsules, 16]
@@ -396,13 +396,13 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
         tf.reduce_sum(tf.multiply(rr_tiled, tf.square(votes - means)), axis=2,
                       keepdims=True) / (rr_sum + K.epsilon())
     )
-    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
+    tf.print("\n TIME", "4 m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # M_step 5 - compute costs for each parent capsule
     # beta_v shape: [batch_size, 1, 1, 1, out_capsules, 1]
     # costs shape: [batch_size, 1, 1, out_capsules, 16]
     costs = beta_v + tf.multiply(K.log(std_dev + K.epsilon()), rr_sum)
-    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
+    tf.print("\n TIME", "5 m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # M_step 6 - compute activation for each parent capsule
     # beta_a shape: [batch_size, 1, 1, out_capsules]
@@ -412,13 +412,13 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     out_act = K.sigmoid(lambd * (beta_a - tf.reduce_sum(costs, axis=-1)))
     # tf.print("_routing_m_step out_act ", out_act[0])
     # tf.print("_routing_m_step beta_a ", beta_a[0])
-    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
+    tf.print("\n TIME", "6 m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     out_act = K.expand_dims(out_act, -1)
     # tf.print("_routing_m_step out_act 2", out_act[0])
     # # tf.print("_routing_m_step means", means[0])
     # # tf.print("_routing_m_step std_dev", std_dev[0])
-    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
+    tf.print("\n TIME", "7 m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     return out_act, means, std_dev
 
