@@ -29,8 +29,8 @@ class PrimaryCaps(layers.Layer):
                                            trainable=True)
 
     def call(self, inputs):
-        # tf.print("in_act primary caps", inputs[0])
-        # tf.print("in_act primary caps", inputs[0])
+        # # tf.print("in_act primary caps", inputs[0])
+        # # tf.print("in_act primary caps", inputs[0])
         spatial_size = int(inputs.shape[1])
 
         pose = K.conv2d(inputs, self.pose_weights, strides=(1, 1),
@@ -40,13 +40,13 @@ class PrimaryCaps(layers.Layer):
 
         act = K.conv2d(inputs, self.act_weights, strides=(1, 1),
                        padding=self.padding, data_format='channels_last')
-        # tf.print("out_act2 primary caps", act[0])
+        # # tf.print("out_act2 primary caps", act[0])
         act = activations.sigmoid(act)
-        # tf.print("out_act1 primary caps", act[0])
+        # # tf.print("out_act1 primary caps", act[0])
         act = K.reshape(
             act, shape=(-1, spatial_size, spatial_size, self.capsules, 1))
 
-        # tf.print("out_act primary caps", act[0])
+        # # tf.print("out_act primary caps", act[0])
         return act, pose
 
     def compute_output_shape(self, input_shape):
@@ -137,14 +137,14 @@ class ConvCaps(BaseCaps):
 
     def call(self, inputs):
         [in_act, in_pose] = inputs
-        # tf.print("in_act conv caps", in_act[0])
+        # # tf.print("in_act conv caps", in_act[0])
 
         # flatten 2D capsule array to 1D vector
         # in_act_shape: [batch_size, height*width, in_capsules, 1]
         # in_pose_shape: [batch_size, height*width, in_capsules, 4, 4]
         in_act = K.reshape(
             in_act, [-1, self.spatial_size_in ** 2, self.in_capsules, 1])
-        # tf.print("in_act 1 conv caps", in_act[0])
+        # # tf.print("in_act 1 conv caps", in_act[0])
         in_pose = K.reshape(
             in_pose, [-1, self.spatial_size_in ** 2, self.in_capsules, 4, 4])
 
@@ -152,7 +152,7 @@ class ConvCaps(BaseCaps):
         # in_act_filtered shape: [batch_size, out_height*out_width, kernel_size^2, in_capsules, 1]
         # in_pose_filtered shape: [batch_size, out_height*out_width, kernel_size^2, in_capsules, 4, 4]
         in_act_filtered = tf.gather(in_act, self.child_parent_map, axis=1)
-        # tf.print("in_act_filtered 1 conv caps", in_act_filtered[0])
+        # # tf.print("in_act_filtered 1 conv caps", in_act_filtered[0])
         in_pose_filtered = tf.gather(in_pose, self.child_parent_map, axis=1)
 
         # reshape input - flatten all input capsules and add another dimension for parent capsules
@@ -165,20 +165,20 @@ class ConvCaps(BaseCaps):
             -1, self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 4, 4])
         in_act_tiled = K.tile(in_act_tiled, [1, 1, 1, self.capsules, 1])
         in_pose_tiled = K.tile(in_pose_tiled, [1, 1, 1, self.capsules, 1, 1])
-        # tf.print("in_act_tiled 1 conv caps", in_act_tiled[0])
+        # # tf.print("in_act_tiled 1 conv caps", in_act_tiled[0])
 
         # replicate the weights for each of the output spatial capsule
         # weights_tiled shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 4, 4]
         weights_tiled = K.tile(self.transformation_weights, [
                                1, self.spatial_size_out ** 2, 1, 1, 1, 1])
-        # tf.print("weights_tiled 1 conv caps", weights_tiled[0])
+        # # tf.print("weights_tiled 1 conv caps", weights_tiled[0])
 
         # Compute all votes and reshape them for the routing purposes
         # votes shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 16]
         votes = tf.matmul(in_pose_tiled, weights_tiled)
         votes = K.reshape(votes, (-1, self.spatial_size_out ** 2,
                                   self.kernel_size ** 2 * self.in_capsules, self.capsules, 16))
-        # tf.print("votes 1 conv caps", votes[0])
+        # # tf.print("votes 1 conv caps", votes[0])
 
         # run routing to compute output activation and pose
         # out_act shape: [batch_size, out_height, out_width, out_capsules, 1]
@@ -189,7 +189,7 @@ class ConvCaps(BaseCaps):
             out_act, [-1, self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
         out_pose = K.reshape(
             out_pose, [-1, self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
-        # tf.print("out_act conv caps", out_act[0])
+        # # tf.print("out_act conv caps", out_act[0])
         return out_act, out_pose
 
     def compute_output_shape(self, input_shape):
@@ -225,7 +225,7 @@ class ClassCapsules(BaseCaps):
 
     def call(self, inputs):
         [in_act, in_pose] = inputs
-        # tf.print("IN_ACT capsule_caps", in_act[0])
+        # # tf.print("IN_ACT capsule_caps", in_act[0])
         # flatten 2D capsule array to 1D vector
         # in_act_shape: [batch_size, height*width, in_capsules, 1]
         # in_pose_shape: [batch_size, height*width, in_capsules, 4, 4]
@@ -272,7 +272,7 @@ class ClassCapsules(BaseCaps):
             in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
         out_act = K.reshape(out_act, [-1, self.capsules])
         out_pose = K.reshape(out_pose, [-1, self.capsules, 4, 4])
-        # tf.print("OUT_ACT return", out_act[0])
+        # # tf.print("OUT_ACT return", out_act[0])
         return out_act, out_pose
 
     def _coord_addition(self, votes):
@@ -356,8 +356,8 @@ def em_routing(in_act, votes, beta_a, beta_v, routings):
 def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # M_step 2 - scale the R matrix by their corresponding input activation values
     rr_scaled = tf.multiply(rr, in_act)
-    tf.print("_routing_m_step in_act caps", in_act[0])
-    tf.print("_routing_m_step rr caps", rr[0])
+    # tf.print("_routing_m_step in_act caps", in_act[0])
+    # tf.print("_routing_m_step rr caps", rr[0])
 
     # replicate it for each pose value
     # rr_tiled shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules,16]
@@ -388,14 +388,14 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # beta_a shape: [batch_size, 1, 1, out_capsules]
     # out_act shape: [batch_size, out_height*out_width, 1, out_capsules, 1]
     # TODO: Do we need normalization here?
-    tf.print("_routing_m_step costs ", costs[0])
+    # tf.print("_routing_m_step costs ", costs[0])
     out_act = K.sigmoid(lambd * (beta_a - tf.reduce_sum(costs, axis=-1)))
-    tf.print("_routing_m_step out_act ", out_act[0])
-    tf.print("_routing_m_step beta_a ", beta_a[0])
+    # tf.print("_routing_m_step out_act ", out_act[0])
+    # tf.print("_routing_m_step beta_a ", beta_a[0])
     out_act = K.expand_dims(out_act, -1)
-    tf.print("_routing_m_step out_act 2", out_act[0])
-    # tf.print("_routing_m_step means", means[0])
-    # tf.print("_routing_m_step std_dev", std_dev[0])
+    # tf.print("_routing_m_step out_act 2", out_act[0])
+    # # tf.print("_routing_m_step means", means[0])
+    # # tf.print("_routing_m_step std_dev", std_dev[0])
     return out_act, means, std_dev
 
 
