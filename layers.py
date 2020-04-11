@@ -49,7 +49,6 @@ class PrimaryCaps(layers.Layer):
 
         # # tf.print("out_act primary caps", act[0])
 
-        code_block
         tf.print("\n TIME", self.name, time.time()-t0)
         return act, pose
 
