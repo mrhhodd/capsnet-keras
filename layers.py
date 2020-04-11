@@ -49,7 +49,7 @@ class PrimaryCaps(layers.Layer):
 
         # # tf.print("out_act primary caps", act[0])
 
-        print("\n TIME", self.name, time.time()-t0)
+        tf.print("\n TIME", self.name, tf.constant(time.time()-t0))
         return act, pose
 
     def compute_output_shape(self, input_shape):
@@ -194,7 +194,7 @@ class ConvCaps(BaseCaps):
         out_pose = K.reshape(
             out_pose, [-1, self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
         # # tf.print("out_act conv caps", out_act[0])
-        print("\n TIME", self.name, time.time()-t0)
+        tf.print("\n TIME", self.name, tf.constant(time.time()-t0))
         return out_act, out_pose
 
     def compute_output_shape(self, input_shape):
@@ -279,7 +279,7 @@ class ClassCapsules(BaseCaps):
         out_act = K.reshape(out_act, [-1, self.capsules])
         out_pose = K.reshape(out_pose, [-1, self.capsules, 4, 4])
         # # tf.print("OUT_ACT return", out_act[0])
-        print("\n TIME", self.name, time.time()-t0)
+        tf.print("\n TIME", self.name, tf.constant(time.time()-t0))
         return out_act, out_pose
 
     def _coord_addition(self, votes):
@@ -352,17 +352,17 @@ def em_routing(in_act, votes, beta_a, beta_v, routings):
         t1=time.time()
         out_act, means, std_devs = _routing_m_step(
             in_act, rr, votes, lambd, beta_a, beta_v)
-        print("\n TIME", " m_step routing", time.time()-t1)
+        tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1))
 
         # Skip the e_step for last iterations - no point in running it
         if i < routings - 1:
             # readjust the rr values for the next step
             t1=time.time()
             rr = _routing_e_step(means, std_devs, out_act, votes)
-            print("\n TIME", " e_step routing", time.time()-t1)
+            tf.print("\n TIME", " e_step routing", tf.constant(time.time()-t1))
 
     # return out_act and means for parent capsule poses
-    print("\n TIME", "routing", time.time()-t0)
+    tf.print("\n TIME", "routing", tf.constant(time.time()-t0))
     return out_act, means
 
 
