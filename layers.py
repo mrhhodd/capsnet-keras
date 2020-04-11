@@ -49,7 +49,7 @@ class PrimaryCaps(layers.Layer):
 
         # # tf.print("out_act primary caps", act[0])
 
-        tf.print("\n TIME", self.name, tf.constant(time.time()-t0))
+        # tf.print("\n TIME", self.name, tf.constant(time.time()-t0))
         return act, pose
 
     def compute_output_shape(self, input_shape):
@@ -194,7 +194,7 @@ class ConvCaps(BaseCaps):
         out_pose = K.reshape(
             out_pose, [-1, self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
         # # tf.print("out_act conv caps", out_act[0])
-        tf.print("\n TIME", self.name, tf.constant(time.time()-t0))
+        # tf.print("\n TIME", self.name, tf.constant(time.time()-t0))
         return out_act, out_pose
 
     def compute_output_shape(self, input_shape):
@@ -279,7 +279,7 @@ class ClassCapsules(BaseCaps):
         out_act = K.reshape(out_act, [-1, self.capsules])
         out_pose = K.reshape(out_pose, [-1, self.capsules, 4, 4])
         # # tf.print("OUT_ACT return", out_act[0])
-        tf.print("\n TIME", self.name, tf.constant(time.time()-t0))
+        # tf.print("\n TIME", self.name, tf.constant(time.time()-t0))
         return out_act, out_pose
 
     def _coord_addition(self, votes):
@@ -359,31 +359,36 @@ def em_routing(in_act, votes, beta_a, beta_v, routings):
             # readjust the rr values for the next step
             t1=time.time()
             rr = _routing_e_step(means, std_devs, out_act, votes)
-            tf.print("\n TIME", " e_step routing", tf.constant(time.time()-t1))
+            # tf.print("\n TIME", " e_step routing", tf.constant(time.time()-t1))
 
     # return out_act and means for parent capsule poses
-    tf.print("\n TIME", "routing", tf.constant(time.time()-t0))
+    # tf.print("\n TIME", "routing", tf.constant(time.time()-t0))
     return out_act, means
 
 
 def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # M_step 2 - scale the R matrix by their corresponding input activation values
+    t1=time.time()
+
     rr_scaled = tf.multiply(rr, in_act)
     # tf.print("_routing_m_step in_act caps", in_act[0])
     # tf.print("_routing_m_step rr caps", rr[0])
-
+    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
     # replicate it for each pose value
     # rr_tiled shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules,16]
     rr_tiled = K.tile(rr_scaled, [1, 1, 1, 1, 16])
+    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # Compute the sum of all input capsules in rr matrix
     # rr_sum shape: [batch_size, 1, 1, out_capsules, 16]
     rr_sum = tf.reduce_sum(rr_tiled, axis=2, keepdims=True)
+    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # M_step 3 - compute means for each parent capsule
     # means shape: [batch_size, 1, 1, out_capsules, 16]
     means = tf.reduce_sum(rr_tiled * votes, axis=2,
                           keepdims=True) / (rr_sum + K.epsilon())
+    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # M_step 4 - compute std_dev for each parent capsule
     # std_dev shape: [batch_size, 1, 1, out_capsules, 16]
@@ -391,11 +396,13 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
         tf.reduce_sum(rr_tiled * tf.square(votes - means), axis=2,
                       keepdims=True) / (rr_sum + K.epsilon())
     )
+    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # M_step 5 - compute costs for each parent capsule
     # beta_v shape: [batch_size, 1, 1, 1, out_capsules, 1]
     # costs shape: [batch_size, 1, 1, out_capsules, 16]
     costs = beta_v + tf.multiply(K.log(std_dev + K.epsilon()), rr_sum)
+    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
 
     # M_step 6 - compute activation for each parent capsule
     # beta_a shape: [batch_size, 1, 1, out_capsules]
@@ -405,10 +412,14 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     out_act = K.sigmoid(lambd * (beta_a - tf.reduce_sum(costs, axis=-1)))
     # tf.print("_routing_m_step out_act ", out_act[0])
     # tf.print("_routing_m_step beta_a ", beta_a[0])
+    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
+
     out_act = K.expand_dims(out_act, -1)
     # tf.print("_routing_m_step out_act 2", out_act[0])
     # # tf.print("_routing_m_step means", means[0])
     # # tf.print("_routing_m_step std_dev", std_dev[0])
+    tf.print("\n TIME", " m_step routing", tf.constant(time.time()-t1));t1=time.time()
+
     return out_act, means, std_dev
 
 
