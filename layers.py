@@ -29,20 +29,23 @@ class PrimaryCaps(layers.Layer):
                                            trainable=True)
 
     def call(self, inputs):
+        tf.print("in_act primary caps", tf.maximum(inputs[0]))
         tf.print("in_act primary caps", inputs[0])
         spatial_size = int(inputs.shape[1])
 
-        pose = K.conv2d(inputs, self.pose_weights, strides=(
-            1, 1), padding=self.padding, data_format='channels_last')
+        pose = K.conv2d(inputs, self.pose_weights, strides=(1, 1),
+                        padding=self.padding, data_format='channels_last')
         pose = K.reshape(
             pose, shape=(-1, spatial_size, spatial_size, self.capsules, 16))
 
         act = K.conv2d(inputs, self.act_weights, strides=(1, 1),
                        padding=self.padding, data_format='channels_last')
+        tf.print("out_act2 primary caps", act[0])
         act = activations.sigmoid(act)
+        tf.print("out_act1 primary caps", act[0])
         act = K.reshape(
             act, shape=(-1, spatial_size, spatial_size, self.capsules, 1))
-        
+
         tf.print("out_act primary caps", act[0])
         return act, pose
 
