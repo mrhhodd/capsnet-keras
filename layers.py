@@ -349,7 +349,7 @@ def em_routing(in_act, votes, beta_a, beta_v, routings):
         # out_act shape
         # means shape
         # std_devs shape
-        t1=time.time
+        t1=time.time()
         out_act, means, std_devs = _routing_m_step(
             in_act, rr, votes, lambd, beta_a, beta_v)
         print("\n TIME", " m_step routing", time.time()-t1)
@@ -357,7 +357,7 @@ def em_routing(in_act, votes, beta_a, beta_v, routings):
         # Skip the e_step for last iterations - no point in running it
         if i < routings - 1:
             # readjust the rr values for the next step
-            t1=time.time
+            t1=time.time()
             rr = _routing_e_step(means, std_devs, out_act, votes)
             print("\n TIME", " e_step routing", time.time()-t1)
 
