@@ -388,11 +388,14 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # beta_a shape: [batch_size, 1, 1, out_capsules]
     # out_act shape: [batch_size, out_height*out_width, 1, out_capsules, 1]
     # TODO: Do we need normalization here?
+    tf.print("_routing_m_step costs ", costs[0])
     out_act = K.sigmoid(lambd * (beta_a - tf.reduce_sum(costs, axis=-1)))
-    out_act = K.expand_dims(out_act, -1)
     tf.print("_routing_m_step out_act ", out_act[0])
-    tf.print("_routing_m_step means", means[0])
-    tf.print("_routing_m_step std_dev", std_dev[0])
+    tf.print("_routing_m_step beta_a ", beta_a[0])
+    out_act = K.expand_dims(out_act, -1)
+    tf.print("_routing_m_step out_act 2", out_act[0])
+    # tf.print("_routing_m_step means", means[0])
+    # tf.print("_routing_m_step std_dev", std_dev[0])
     return out_act, means, std_dev
 
 
