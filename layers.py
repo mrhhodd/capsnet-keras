@@ -139,7 +139,7 @@ class ConvCaps(BaseCaps):
         # child-parent map shape: [out_height*out_width, kernel_size^2]
 
     def call(self, inputs):
-        to = time.time()
+        t0 = time.time()
         [in_act, in_pose] = inputs
         # # tf.print("in_act conv caps", in_act[0])
 
