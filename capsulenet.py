@@ -86,7 +86,6 @@ class CapsNet():
         # print("######## Current global step", self.global_step)
         # tf.print("######## SPREAD LOSS", y_true, y_pred)#,*args, **kwargs)
         tf.print(y_true)
-        print("##########################HEHRHRH")
         tf.print(y_pred)
         # "The margin that we set is: 
         # margin = 0.2 + .79 * tf.sigmoid(tf.minimum(10.0, step / 50000.0 - 4))

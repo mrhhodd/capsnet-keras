@@ -132,6 +132,7 @@ class ConvCaps(BaseCaps):
 
     def call(self, inputs):
         [in_act, in_pose] = inputs
+        tf.print("in_act conv caps", in_act[0])
 
         # flatten 2D capsule array to 1D vector
         # in_act_shape: [batch_size, height*width, in_capsules, 1]
@@ -178,6 +179,7 @@ class ConvCaps(BaseCaps):
             out_act, [-1, self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
         out_pose = K.reshape(
             out_pose, [-1, self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
+        tf.print("out_act conv caps", out_act[0])
         return out_act, out_pose
 
     def compute_output_shape(self, input_shape):
@@ -213,7 +215,7 @@ class ClassCapsules(BaseCaps):
 
     def call(self, inputs):
         [in_act, in_pose] = inputs
-
+        tf.print("IN_ACT capsule_caps", in_act[0])
         # flatten 2D capsule array to 1D vector
         # in_act_shape: [batch_size, height*width, in_capsules, 1]
         # in_pose_shape: [batch_size, height*width, in_capsules, 4, 4]
@@ -260,6 +262,7 @@ class ClassCapsules(BaseCaps):
             in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
         out_act = K.reshape(out_act, [-1, self.capsules])
         out_pose = K.reshape(out_pose, [-1, self.capsules, 4, 4])
+        tf.print("OUT_ACT return", out_act[0])
         return out_act, out_pose
 
     def _coord_addition(self, votes):
