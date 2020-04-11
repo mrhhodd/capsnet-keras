@@ -144,6 +144,7 @@ class ConvCaps(BaseCaps):
         # in_pose_shape: [batch_size, height*width, in_capsules, 4, 4]
         in_act = K.reshape(
             in_act, [-1, self.spatial_size_in ** 2, self.in_capsules, 1])
+        tf.print("in_act 1 conv caps", in_act[0])
         in_pose = K.reshape(
             in_pose, [-1, self.spatial_size_in ** 2, self.in_capsules, 4, 4])
 
@@ -151,6 +152,7 @@ class ConvCaps(BaseCaps):
         # in_act_filtered shape: [batch_size, out_height*out_width, kernel_size^2, in_capsules, 1]
         # in_pose_filtered shape: [batch_size, out_height*out_width, kernel_size^2, in_capsules, 4, 4]
         in_act_filtered = tf.gather(in_act, self.child_parent_map, axis=1)
+        tf.print("in_act_filtered 1 conv caps", in_act_filtered[0])
         in_pose_filtered = tf.gather(in_pose, self.child_parent_map, axis=1)
 
         # reshape input - flatten all input capsules and add another dimension for parent capsules
@@ -163,17 +165,20 @@ class ConvCaps(BaseCaps):
             -1, self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 4, 4])
         in_act_tiled = K.tile(in_act_tiled, [1, 1, 1, self.capsules, 1])
         in_pose_tiled = K.tile(in_pose_tiled, [1, 1, 1, self.capsules, 1, 1])
+        tf.print("in_act_tiled 1 conv caps", in_act_tiled[0])
 
         # replicate the weights for each of the output spatial capsule
         # weights_tiled shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 4, 4]
         weights_tiled = K.tile(self.transformation_weights, [
                                1, self.spatial_size_out ** 2, 1, 1, 1, 1])
+        tf.print("weights_tiled 1 conv caps", weights_tiled[0])
 
         # Compute all votes and reshape them for the routing purposes
         # votes shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 16]
         votes = tf.matmul(in_pose_tiled, weights_tiled)
         votes = K.reshape(votes, (-1, self.spatial_size_out ** 2,
                                   self.kernel_size ** 2 * self.in_capsules, self.capsules, 16))
+        tf.print("votes 1 conv caps", votes[0])
 
         # run routing to compute output activation and pose
         # out_act shape: [batch_size, out_height, out_width, out_capsules, 1]
