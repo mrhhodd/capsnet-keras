@@ -49,10 +49,14 @@ class CapsNet():
                  routings=3):
         self.input_shape = input_shape
         self.n_class = n_class
-        self.global_step = 0
+        # self.global_step = 0
+        self.global_step = K.variable(0, name='global_step')
         self.lr = lr
         self.lr_decay = lr_decay
         self.model = self._create_model()
+
+    def updateStep(self, batch, logs):
+        self.global_step = batch
 
     def _create_model(self):
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
@@ -72,7 +76,7 @@ class CapsNet():
         model = models.Model(inputs, fc_act, name='EM-CapsNet')
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
-                      loss=self.spread_loss(),
+                      loss=self.spread_loss,
                       metrics=['accuracy', specificity, sensitivity, f1_score])
 
         print(model.layers)
@@ -80,24 +84,22 @@ class CapsNet():
         model.summary()
         return model
 
-    def spread_loss(self):
+    def spread_loss(self, y_true, y_pred):
         # "The margin that we set is: 
         # margin = 0.2 + .79 * tf.sigmoid(tf.minimum(10.0, step / 50000.0 - 4))
         # where step is the training step. We trained with batch size of 64."
         # https://openreview.net/forum?id=HJWLfGWRb
-        def loss(y_true, y_pred):
-            m_min = 0.2
-            m_delta = 0.79
-            p = 50000.0 * 64.0
-            tf.print("GLOBAL_STEP: ", self.global_step)
-            margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
-            a_i = tf.multiply(1 - y_true, y_pred)
-            a_i = a_i[a_i != 0]
-            a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1)
-            loss = K.square(K.maximum(0., margin - (a_t - a_i)))
-            return K.mean(K.sum(loss))
-        self.global_step += 1
-        return loss
+        m_min = 0.2
+        m_delta = 0.79
+        p = 50000.0 * 64.0
+        tf.print("GLOBAL_STEP: ", self.global_step)
+        margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
+        a_i = tf.multiply(1 - y_true, y_pred)
+        a_i = a_i[a_i != 0]
+        a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1)
+        loss = K.square(K.maximum(0., margin - (a_t - a_i)))
+        # self.global_step += 1
+        return K.mean(K.sum(loss))
 
 
 def train(network, data_gen, save_dir, epochs=30):
@@ -111,7 +113,10 @@ def train(network, data_gen, save_dir, epochs=30):
             # We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96.""
             # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
             callbacks.LearningRateScheduler(
-                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch))
+                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch)),
+            callbacks.LambdaCallback(
+                on_epoch_begin=network.updateStep
+            )
         ]
     )
 
