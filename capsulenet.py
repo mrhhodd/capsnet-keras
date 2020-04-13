@@ -73,7 +73,7 @@ class CapsNet():
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
                       loss=self.spread_loss,
-                      metrics=['accuracy', specificity, sensitivity])#, f1_score])
+                      metrics=['accuracy', specificity, sensitivity, f1_score])
 
         print(model.layers)
 
@@ -94,7 +94,7 @@ class CapsNet():
         a_i = a_i[a_i != 0]
         a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1)
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
-        self.global_step += 1
+        # self.global_step += 1
         return K.mean(K.sum(loss))
 
 
