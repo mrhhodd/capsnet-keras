@@ -55,9 +55,7 @@ class CapsNet():
         self.lr_decay = lr_decay
         self.model = self._create_model()
 
-    def updateStep(self, batch, logs):
-        K.set_value(self.global_step, batch)
-
+   
     def _create_model(self):
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
@@ -101,6 +99,14 @@ class CapsNet():
         # self.global_step += 1
         return K.mean(K.sum(loss))
 
+    class changeAlpha(callbacks.Callback):
+        def __init__(self, alpha):
+            super(changeAlpha, self).__init__()
+            self.alpha = alpha 
+
+        def on_epoch_begin(self, epoch, logs={}):
+            K.set_value(self.alpha, epoch)
+             
 
 def train(network, data_gen, save_dir, epochs=30):
     os.makedirs(save_dir, exist_ok=True)
@@ -114,9 +120,7 @@ def train(network, data_gen, save_dir, epochs=30):
             # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
             callbacks.LearningRateScheduler(
                 schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch)),
-            callbacks.LambdaCallback(
-                on_epoch_begin=network.updateStep
-            )
+            changeAlpha(alpha=network.global_step)
         ]
     )
 
