@@ -80,12 +80,12 @@ class CapsNet():
         model.summary()
         return model
 
-    def spread_loss(self, y_true, y_pred):
+    def spread_loss(self):
         # "The margin that we set is: 
         # margin = 0.2 + .79 * tf.sigmoid(tf.minimum(10.0, step / 50000.0 - 4))
         # where step is the training step. We trained with batch size of 64."
         # https://openreview.net/forum?id=HJWLfGWRb
-        def loss(y_true, y_pred)
+        def loss(y_true, y_pred):
             m_min = 0.2
             m_delta = 0.79
             p = 50000.0 * 64.0
