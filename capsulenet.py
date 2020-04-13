@@ -99,13 +99,13 @@ class CapsNet():
         # self.global_step += 1
         return K.mean(K.sum(loss))
 
-    class changeAlpha(callbacks.Callback):
-        def __init__(self, alpha):
-            super(changeAlpha, self).__init__()
-            self.alpha = alpha 
+class changeAlpha(callbacks.Callback):
+    def __init__(self, alpha):
+        super(changeAlpha, self).__init__()
+        self.alpha = alpha 
 
-        def on_epoch_begin(self, epoch, logs={}):
-            K.set_value(self.alpha, epoch)
+    def on_epoch_begin(self, epoch, logs={}):
+        K.set_value(self.alpha, epoch)
              
 
 def train(network, data_gen, save_dir, epochs=30):
@@ -120,7 +120,7 @@ def train(network, data_gen, save_dir, epochs=30):
             # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
             callbacks.LearningRateScheduler(
                 schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch)),
-            network.changeAlpha(alpha=network.global_step)
+            changeAlpha(alpha=network.global_step)
         ]
     )
 
