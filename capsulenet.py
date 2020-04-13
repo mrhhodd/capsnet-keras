@@ -9,6 +9,7 @@ import tensorflow as tf
 from tensorflow.keras import models, layers, optimizers, callbacks, regularizers
 from tensorflow.keras import backend as K
 from layers import PrimaryCaps, ConvCaps, ClassCapsules
+from metrics import specificity, sensitivity, f1
 K.set_image_data_format('channels_last')
 
 # done:
@@ -17,8 +18,8 @@ K.set_image_data_format('channels_last')
 # TODO: optimizer? expontential decay?
 # TODO: simple data normalization
 # TODO: Regularizations?
-# TODO: How to test? divide data into 10 data sets, then run K-fold validation for different validation splits?
 
+# TODO: How to test? divide data into 10 data sets, then run K-fold validation for different validation splits?
 # TODO: Do we need normalization in the m_step?
 # TODO: Analyze the problems that Gritzman mentions!
 # TODO: tests with data augmentation?
@@ -75,7 +76,7 @@ class CapsNet():
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
                       loss=self.spread_loss,
-                      metrics=['accuracy'])
+                      metrics=['accuracy', specificity, sensitivity, f1])
 
         print(model.layers)
 
@@ -90,8 +91,8 @@ class CapsNet():
         m_min = 0.2
         m_delta = 0.79
         p = 50000.0 * 64.0
+        tf.print("GLOBAL_STEP: ", self.global_step)
         margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
-        # margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, 1 / 50000.0 - 4))
         a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
         a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1)
