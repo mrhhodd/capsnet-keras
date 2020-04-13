@@ -54,9 +54,6 @@ class CapsNet():
         self.lr_decay = lr_decay
         self.model = self._create_model()
 
-    def increment_global_step(self, batch, logs):
-        self.global_step = batch
-
     def _create_model(self):
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
@@ -91,13 +88,13 @@ class CapsNet():
         m_min = 0.2
         m_delta = 0.79
         p = 50000.0 * 64.0
-        self.global_step += 1
         tf.print("GLOBAL_STEP: ", self.global_step)
         margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
         a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1)
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
+        self.global_step += 1
         return K.mean(K.sum(loss))
 
 
@@ -112,9 +109,7 @@ def train(network, data_gen, save_dir, epochs=30):
             # We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96.""
             # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
             callbacks.LearningRateScheduler(
-                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch)),
-            callbacks.LambdaCallback(
-                on_batch_begin=network.increment_global_step)
+                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch))
         ]
     )
 
