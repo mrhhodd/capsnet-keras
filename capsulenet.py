@@ -9,7 +9,7 @@ import tensorflow as tf
 from tensorflow.keras import models, layers, optimizers, callbacks, regularizers
 from tensorflow.keras import backend as K
 from layers import PrimaryCaps, ConvCaps, ClassCapsules
-from metrics import specificity, sensitivity, f1
+from metrics import specificity, sensitivity, f1_score
 K.set_image_data_format('channels_last')
 
 # done:
@@ -76,7 +76,7 @@ class CapsNet():
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
                       loss=self.spread_loss,
-                      metrics=['accuracy', specificity, sensitivity, f1])
+                      metrics=['accuracy', specificity, sensitivity, f1_score])
 
         print(model.layers)
 
@@ -91,6 +91,7 @@ class CapsNet():
         m_min = 0.2
         m_delta = 0.79
         p = 50000.0 * 64.0
+        self.global_step += 1
         tf.print("GLOBAL_STEP: ", self.global_step)
         margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = tf.multiply(1 - y_true, y_pred)

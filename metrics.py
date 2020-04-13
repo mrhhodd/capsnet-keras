@@ -10,11 +10,11 @@ def sensitivity(y_true, y_pred):
     return tp / (tp + fn + EPSILON)    
 
 
-def f1(y_true, y_pred):
+def f1_score(y_true, y_pred):
     [tp, tn, fp, fn] = _analyse_data(y_true, y_pred)
     precision = tp / (tp + fp + EPSILON)
     recall = tp / (tp + fn + EPSILON)
-    return 2 * precision * recall / (precision + recall)
+    return 2 * precision * recall / (precision + recall + EPSILON)
 
 
 def _analyse_data(y_true, y_pred):
