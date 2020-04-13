@@ -120,7 +120,7 @@ def train(network, data_gen, save_dir, epochs=30):
             # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
             callbacks.LearningRateScheduler(
                 schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch)),
-            changeAlpha(alpha=network.global_step)
+            network.changeAlpha(alpha=network.global_step)
         ]
     )
 
