@@ -32,6 +32,7 @@ class PrimaryCaps(layers.Layer):
         # # tf.print("in_act primary caps", inputs[0])
         # # tf.print("in_act primary caps", inputs[0])
         t0 = time.time()
+        batch_size = tf.shape(in_act)[0]
         spatial_size = int(inputs.shape[1])
 
         pose = K.conv2d(inputs, self.pose_weights, strides=(1, 1),
