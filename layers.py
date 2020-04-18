@@ -292,7 +292,7 @@ class ClassCapsules(BaseCaps):
         # restore the spatial shape of each capsule type
         # votes shape: [size, size, in_capsules, out_capsules, 16]
         votes = K.reshape(
-            votes, (size, size, self.in_capsules, self.capsules, 16))
+            votes, (-1, size, size, self.in_capsules, self.capsules, 16))
 
         # Create offset values for each capsule depending of its spatial location
         # e.g. for 5x5 we would have two matrices for coord addition:
@@ -309,11 +309,11 @@ class ClassCapsules(BaseCaps):
 
         # first val of the righmost column for width
         w_offset[:, 3] = offset_vals
-        w_offset = np.reshape(w_offset, [1, size, 1, 1, 16])
+        w_offset = np.reshape(w_offset, [1, 1, size, 1, 1, 16])
 
         # second val of the righmost column for height
         h_offset[:, 7] = offset_vals
-        h_offset = np.reshape(h_offset, [size, 1, 1, 1, 16])
+        h_offset = np.reshape(h_offset, [1, size, 1, 1, 1, 16])
 
         # Combine width and height offsets using broadcasting
         # offset shape: [size, size, 1, 1, 16])
