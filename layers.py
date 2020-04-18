@@ -141,6 +141,7 @@ class ConvCaps(BaseCaps):
     def call(self, inputs):
         t0 = time.time()
         [in_act, in_pose] = inputs
+        batch_size = tf.shape(in_act)[0]
         # # tf.print("in_act conv caps", in_act[0])
 
         # flatten 2D capsule array to 1D vector
@@ -174,7 +175,7 @@ class ConvCaps(BaseCaps):
         # replicate the weights for each of the output spatial capsule
         # weights_tiled shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 4, 4]
         weights_tiled = K.tile(self.transformation_weights, [
-                               1, self.spatial_size_out ** 2, 1, 1, 1, 1])
+                               batch_size, self.spatial_size_out ** 2, 1, 1, 1, 1])
         # # tf.print("weights_tiled 1 conv caps", weights_tiled[0])
 
         # Compute all votes and reshape them for the routing purposes
@@ -231,6 +232,7 @@ class ClassCapsules(BaseCaps):
     def call(self, inputs):
         t0=time.time()
         [in_act, in_pose] = inputs
+        batch_size = tf.shape(in_act)[0]
         # # tf.print("IN_ACT capsule_caps", in_act[0])
         # flatten 2D capsule array to 1D vector
         # in_act_shape: [batch_size, height*width, in_capsules, 1]
@@ -260,7 +262,7 @@ class ClassCapsules(BaseCaps):
         # replicate the weights for each of the input spatial capsule
         # weights_tiled shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 4, 4]
         weights_tiled = K.tile(self.transformation_weights, [
-                               1, 1, self.spatial_size_in ** 2, 1, 1, 1])
+                               batch_size, 1, self.spatial_size_in ** 2, 1, 1, 1])
 
         # Compute all votes and add information about spatial position of each input capsule
         # Reshape the votes for the routing purposes
