@@ -95,11 +95,10 @@ class CapsNet():
         m_min = 0.2
         m_delta = 0.79
         p = 50000.0 * 64.0
-        tf.print("GLOBAL_STEP: ", self.global_step)
         margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
-        a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1)
+        a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1, keepdims=True)
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         # self.global_step += 1
         return K.mean(K.sum(loss))

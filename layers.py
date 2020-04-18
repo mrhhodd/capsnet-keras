@@ -268,8 +268,6 @@ class ClassCapsules(BaseCaps):
         # Compute all votes and add information about spatial position of each input capsule
         # Reshape the votes for the routing purposes
         # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
-        print("#### SHAPES:", in_pose_tiled.shape, weights_tiled.shape)
-        tf.print("##### BATCH SIZE:", batch_size, in_pose_tiled.shape, weights_tiled.shape)
         votes = tf.matmul(in_pose_tiled, weights_tiled)
         votes = self._coord_addition(votes)
         votes = K.reshape(votes, (batch_size, 1, self.spatial_size_in **
