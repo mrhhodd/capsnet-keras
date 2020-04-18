@@ -327,20 +327,19 @@ class ClassCapsules(BaseCaps):
 def em_routing(in_act, votes, beta_a, beta_v, routings):
     t0=time.time()
     batch_size = tf.shape(votes)[0]
-    out_capsules = tf.shape(votes)[3]
     # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
     # initialize R matrix with 1/out_capsules
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
     # TODO: rewrite this?
-    rr = K.mean(K.ones_like(votes) / tf.cast(out_capsules, tf.float32), axis=-1, keepdims=True)
+    rr = K.mean(K.ones_like(votes) / votes.shape[3], axis=-1, keepdims=True)
 
     # beta_v shape: [batch_size, 1, 1, out_capsules, 1]
-    beta_v = K.reshape(beta_v, [1, 1, 1, out_capsules, 1])
-    # beta_v = K.tile(beta_v, (batch_size, 1, 1, 1, 1))
+    beta_v = K.reshape(beta_v, [1, 1, 1, votes.shape[3], 1])
+    beta_v = K.tile(beta_v, (batch_size, 1, 1, 1, 1))
 
     # beta_a shape: [batch_size, 1, 1, out_capsules]
-    beta_a = K.reshape(beta_a, [1, 1, 1, out_capsules])
-    # beta_a = K.tile(beta_a, (batch_size, 1, 1, 1))
+    beta_a = K.reshape(beta_a, [1, 1, 1, votes.shape[3]])
+    beta_a = K.tile(beta_a, (batch_size, 1, 1, 1))
 
     for i in range(0, routings):
         # lambda value based on comments in hintons review
@@ -371,14 +370,13 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # M_step 2 - scale the R matrix by their corresponding input activation values
     t1=time.time()
 
-    # rr_scaled = tf.multiply(rr, in_act)
-    rr_tiled = tf.multiply(rr, in_act)
+    rr_scaled = tf.multiply(rr, in_act)
     # tf.print("_routing_m_step in_act caps", in_act[0])
     # tf.print("_routing_m_step rr caps", rr[0])
     # print("\n TIME", "0 m_step routing", time.time()-t1);t1=time.time()
     # replicate it for each pose value
     # rr_tiled shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules,16]
-    # rr_tiled = K.tile(rr_scaled, [1, 1, 1, 1, 16])
+    rr_tiled = K.tile(rr_scaled, [1, 1, 1, 1, 16])
     # print("\n TIME", "1 m_step routing", time.time()-t1);t1=time.time()
 
     # Compute the sum of all input capsules in rr matrix
