@@ -59,15 +59,20 @@ class CapsNet():
     def _create_model(self):
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
+        # A = B = C = D = 32
+        A = 8
+        B = 8
+        C = 8
+        D = 8
         reg = regularizers.l2(0.0000002)
         inputs = layers.Input(shape=self.input_shape)
-        conv = layers.Conv2D(filters=32, kernel_size=5, strides=2,
+        conv = layers.Conv2D(filters=A, kernel_size=5, strides=2,
                              padding='same', activation='relu', name='conv1')(inputs)
         [pc_act, pc_pose] = PrimaryCaps(
-            capsules=32, kernel_size=1, strides=1, padding='valid', name='primCaps')(conv)
-        [cc1_act, cc1_pose] = ConvCaps(capsules=32, kernel_size=3, strides=2, padding='valid',
+            capsules=B, kernel_size=1, strides=1, padding='valid', name='primCaps')(conv)
+        [cc1_act, cc1_pose] = ConvCaps(capsules=C, kernel_size=3, strides=2, padding='valid',
                                        routings=3, weights_reg=reg, name='conv_caps_1')([pc_act, pc_pose])
-        [cc2_act, cc2_pose] = ConvCaps(capsules=32, kernel_size=3, strides=1, padding='valid',
+        [cc2_act, cc2_pose] = ConvCaps(capsules=D, kernel_size=3, strides=1, padding='valid',
                                        routings=3, weights_reg=reg, name='conv_caps_2')([cc1_act, cc1_pose])
         [fc_act, fc_pose] = ClassCapsules(
             capsules=self.n_class, routings=3, weights_reg=reg, name='class_caps')([cc2_act, cc2_pose])
