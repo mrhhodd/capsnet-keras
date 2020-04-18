@@ -371,7 +371,8 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # M_step 2 - scale the R matrix by their corresponding input activation values
     t1=time.time()
 
-    rr_scaled = tf.multiply(rr, in_act)
+    # rr_scaled = tf.multiply(rr, in_act)
+    rr_tiled = tf.multiply(rr, in_act)
     # tf.print("_routing_m_step in_act caps", in_act[0])
     # tf.print("_routing_m_step rr caps", rr[0])
     # print("\n TIME", "0 m_step routing", time.time()-t1);t1=time.time()
