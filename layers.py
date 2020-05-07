@@ -32,12 +32,13 @@ class PrimaryCaps(layers.Layer):
         # # tf.print("in_act primary caps", inputs[0])
         # # tf.print("in_act primary caps", inputs[0])
         t0 = time.time()
+        batch_size = tf.shape(inputs)[0]
         spatial_size = int(inputs.shape[1])
 
         pose = K.conv2d(inputs, self.pose_weights, strides=(1, 1),
                         padding=self.padding, data_format='channels_last')
         pose = K.reshape(
-            pose, shape=(-1, spatial_size, spatial_size, self.capsules, 16))
+            pose, shape=(batch_size, spatial_size, spatial_size, self.capsules, 16))
 
         act = K.conv2d(inputs, self.act_weights, strides=(1, 1),
                        padding=self.padding, data_format='channels_last')
@@ -45,7 +46,7 @@ class PrimaryCaps(layers.Layer):
         act = activations.sigmoid(act)
         # # tf.print("out_act1 primary caps", act[0])
         act = K.reshape(
-            act, shape=(-1, spatial_size, spatial_size, self.capsules, 1))
+            act, shape=(batch_size, spatial_size, spatial_size, self.capsules, 1))
 
         # # tf.print("out_act primary caps", act[0])
 
@@ -141,16 +142,17 @@ class ConvCaps(BaseCaps):
     def call(self, inputs):
         t0 = time.time()
         [in_act, in_pose] = inputs
+        batch_size = tf.shape(in_act)[0]
         # # tf.print("in_act conv caps", in_act[0])
 
         # flatten 2D capsule array to 1D vector
         # in_act_shape: [batch_size, height*width, in_capsules, 1]
         # in_pose_shape: [batch_size, height*width, in_capsules, 4, 4]
         in_act = K.reshape(
-            in_act, [-1, self.spatial_size_in ** 2, self.in_capsules, 1])
+            in_act, [batch_size, self.spatial_size_in ** 2, self.in_capsules, 1])
         # # tf.print("in_act 1 conv caps", in_act[0])
         in_pose = K.reshape(
-            in_pose, [-1, self.spatial_size_in ** 2, self.in_capsules, 4, 4])
+            in_pose, [batch_size, self.spatial_size_in ** 2, self.in_capsules, 4, 4])
 
         # pick only child capsules in the receptive field of each parent capsule
         # in_act_filtered shape: [batch_size, out_height*out_width, kernel_size^2, in_capsules, 1]
@@ -164,9 +166,9 @@ class ConvCaps(BaseCaps):
         # in_act_tiled shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 1]
         # in_pose_tiled shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 4, 4]
         in_act_tiled = K.reshape(in_act_filtered, [
-            -1, self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 1])
+            batch_size, self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 1])
         in_pose_tiled = K.reshape(in_pose_filtered, [
-            -1, self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 4, 4])
+            batch_size, self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 4, 4])
         in_act_tiled = K.tile(in_act_tiled, [1, 1, 1, self.capsules, 1])
         in_pose_tiled = K.tile(in_pose_tiled, [1, 1, 1, self.capsules, 1, 1])
         # # tf.print("in_act_tiled 1 conv caps", in_act_tiled[0])
@@ -174,13 +176,13 @@ class ConvCaps(BaseCaps):
         # replicate the weights for each of the output spatial capsule
         # weights_tiled shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 4, 4]
         weights_tiled = K.tile(self.transformation_weights, [
-                               1, self.spatial_size_out ** 2, 1, 1, 1, 1])
+                               batch_size, self.spatial_size_out ** 2, 1, 1, 1, 1])
         # # tf.print("weights_tiled 1 conv caps", weights_tiled[0])
 
         # Compute all votes and reshape them for the routing purposes
         # votes shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 16]
         votes = tf.matmul(in_pose_tiled, weights_tiled)
-        votes = K.reshape(votes, (-1, self.spatial_size_out ** 2,
+        votes = K.reshape(votes, (batch_size, self.spatial_size_out ** 2,
                                   self.kernel_size ** 2 * self.in_capsules, self.capsules, 16))
         # # tf.print("votes 1 conv caps", votes[0])
 
@@ -190,9 +192,9 @@ class ConvCaps(BaseCaps):
         out_act, out_pose = self.routing_method(
             in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
         out_act = K.reshape(
-            out_act, [-1, self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
+            out_act, [batch_size, self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
         out_pose = K.reshape(
-            out_pose, [-1, self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
+            out_pose, [batch_size, self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
         # # tf.print("out_act conv caps", out_act[0])
         # # print("\n TIME", self.name, tf.constant(time.time()-t0))
         return out_act, out_pose
@@ -231,14 +233,15 @@ class ClassCapsules(BaseCaps):
     def call(self, inputs):
         t0=time.time()
         [in_act, in_pose] = inputs
+        batch_size = tf.shape(in_act)[0]
         # # tf.print("IN_ACT capsule_caps", in_act[0])
         # flatten 2D capsule array to 1D vector
         # in_act_shape: [batch_size, height*width, in_capsules, 1]
         # in_pose_shape: [batch_size, height*width, in_capsules, 4, 4]
         in_act = K.reshape(
-            in_act, [-1, self.spatial_size_in ** 2, self.in_capsules, 1])
+            in_act, [batch_size, self.spatial_size_in ** 2, self.in_capsules, 1])
         in_pose = K.reshape(
-            in_pose, [-1, self.spatial_size_in ** 2, self.in_capsules, 4, 4])
+            in_pose, [batch_size, self.spatial_size_in ** 2, self.in_capsules, 4, 4])
 
         # pick only child capsules in the receptive field of each parent capsule
         # in_act_filtered shape: [batch_size, out_height*out_width, kernel_size^2, in_capsules, 1]
@@ -251,23 +254,23 @@ class ClassCapsules(BaseCaps):
         # in_pose_tiled shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 4, 4]
 
         in_act_tiled = K.reshape(
-            in_act_filtered, [-1, 1, self.spatial_size_in ** 2 * self.in_capsules, 1, 1])
+            in_act_filtered, [batch_size, 1, self.spatial_size_in ** 2 * self.in_capsules, 1, 1])
         in_pose_tiled = K.reshape(
-            in_pose_filtered, [-1, 1, self.spatial_size_in ** 2 * self.in_capsules, 1, 4, 4])
+            in_pose_filtered, [batch_size, 1, self.spatial_size_in ** 2 * self.in_capsules, 1, 4, 4])
         in_act_tiled = K.tile(in_act_tiled, [1, 1, 1, self.capsules, 1])
         in_pose_tiled = K.tile(in_pose_tiled, [1, 1, 1, self.capsules, 1, 1])
 
         # replicate the weights for each of the input spatial capsule
         # weights_tiled shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 4, 4]
         weights_tiled = K.tile(self.transformation_weights, [
-                               1, 1, self.spatial_size_in ** 2, 1, 1, 1])
+                               batch_size, 1, self.spatial_size_in ** 2, 1, 1, 1])
 
         # Compute all votes and add information about spatial position of each input capsule
         # Reshape the votes for the routing purposes
         # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
         votes = tf.matmul(in_pose_tiled, weights_tiled)
         votes = self._coord_addition(votes)
-        votes = K.reshape(votes, (-1, 1, self.spatial_size_in **
+        votes = K.reshape(votes, (batch_size, 1, self.spatial_size_in **
                                   2 * self.in_capsules, self.capsules, 16))
 
         # run routing to compute output activation and pose
@@ -276,8 +279,8 @@ class ClassCapsules(BaseCaps):
         # out_pose shape: [batch_size, out_capsules, 4, 4]
         out_act, out_pose = self.routing_method(
             in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
-        out_act = K.reshape(out_act, [-1, self.capsules])
-        out_pose = K.reshape(out_pose, [-1, self.capsules, 4, 4])
+        out_act = K.reshape(out_act, [batch_size, self.capsules])
+        out_pose = K.reshape(out_pose, [batch_size, self.capsules, 4, 4])
         # # tf.print("OUT_ACT return", out_act[0])
         # # print("\n TIME", self.name, tf.constant(time.time()-t0))
         return out_act, out_pose
@@ -287,7 +290,7 @@ class ClassCapsules(BaseCaps):
         # restore the spatial shape of each capsule type
         # votes shape: [size, size, in_capsules, out_capsules, 16]
         votes = K.reshape(
-            votes, (size, size, self.in_capsules, self.capsules, 16))
+            votes, (-1, size, size, self.in_capsules, self.capsules, 16))
 
         # Create offset values for each capsule depending of its spatial location
         # e.g. for 5x5 we would have two matrices for coord addition:
@@ -304,11 +307,11 @@ class ClassCapsules(BaseCaps):
 
         # first val of the righmost column for width
         w_offset[:, 3] = offset_vals
-        w_offset = np.reshape(w_offset, [1, size, 1, 1, 16])
+        w_offset = np.reshape(w_offset, [1, 1, size, 1, 1, 16])
 
         # second val of the righmost column for height
         h_offset[:, 7] = offset_vals
-        h_offset = np.reshape(h_offset, [size, 1, 1, 1, 16])
+        h_offset = np.reshape(h_offset, [1, size, 1, 1, 1, 16])
 
         # Combine width and height offsets using broadcasting
         # offset shape: [size, size, 1, 1, 16])
