@@ -80,14 +80,12 @@ class CapsNet():
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
                       loss=self.spread_loss,
-                      metrics=['accuracy', specificity, sensitivity, f1_score, self.get_global_state])
+                      metrics=['accuracy', specificity, sensitivity, f1_score])
 
         print(model.layers)
 
         model.summary()
         return model
-    def get_global_state(self, y_true, y_pred):
-        return self.global_step
 
     def spread_loss(self, y_true, y_pred):
         # "The margin that we set is: 
@@ -100,16 +98,13 @@ class CapsNet():
         margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         tf.print("################# STEP?")
         tf.print(self.global_step)
-        print(self.global_step)
-        tf.print(self.global_step + 1)
-        print(self.global_step + 1)
         tf.print("################# STEP!")
         a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
         a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1, keepdims=True)
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         # self.global_step += 1
-        # self.global_step.assign(self.global_step+1)
+        self.global_step.assign(self.global_step+1)
         return K.mean(K.sum(loss))
 
 def train(network, data_gen, save_dir, epochs=30):
@@ -123,7 +118,8 @@ def train(network, data_gen, save_dir, epochs=30):
             # We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96.""
             # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
             callbacks.LearningRateScheduler(
-                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch))
+                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch)),
+            changeAlpha(alpha=network.global_step)
         ]
     )
 
