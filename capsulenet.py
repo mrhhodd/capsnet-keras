@@ -98,7 +98,9 @@ class CapsNet():
         margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         tf.print("################# STEP?")
         tf.print(self.global_step)
+        print(self.global_step)
         tf.print(self.global_step + 1)
+        print(self.global_step + 1)
         tf.print("################# STEP!")
         a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
