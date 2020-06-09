@@ -79,8 +79,8 @@ class CapsNet():
         model = models.Model(inputs, fc_act, name='EM-CapsNet')
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
-                      loss=[self.spread_loss, self.get_global_state],
-                      metrics=['accuracy', specificity, sensitivity, f1_score])
+                      loss=self.spread_loss,
+                      metrics=['accuracy', specificity, sensitivity, f1_score, self.get_global_state])
 
         print(model.layers)
 
