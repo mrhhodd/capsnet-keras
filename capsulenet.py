@@ -96,9 +96,7 @@ class CapsNet():
         m_delta = 0.79
         p = 50000.0 * 64.0
         margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
-        tf.print("################# STEP?")
         tf.print(self.global_step)
-        tf.print("################# STEP!")
         a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
         a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1, keepdims=True)
@@ -118,8 +116,7 @@ def train(network, data_gen, save_dir, epochs=30):
             # We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96.""
             # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
             callbacks.LearningRateScheduler(
-                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch)),
-            changeAlpha(alpha=network.global_step)
+                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch))
         ]
     )
 
