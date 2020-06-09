@@ -79,13 +79,15 @@ class CapsNet():
         model = models.Model(inputs, fc_act, name='EM-CapsNet')
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
-                      loss=self.spread_loss,
+                      loss=[self.spread_loss, self.get_global_state],
                       metrics=['accuracy', specificity, sensitivity, f1_score])
 
         print(model.layers)
 
         model.summary()
         return model
+    def get_global_state(self, y_true, y_pred):
+        return self.global_step
 
     def spread_loss(self, y_true, y_pred):
         # "The margin that we set is: 
@@ -110,15 +112,6 @@ class CapsNet():
         # self.global_step.assign(self.global_step+1)
         return K.mean(K.sum(loss))
 
-class changeAlpha(callbacks.Callback):
-    def __init__(self, alpha):
-        super(changeAlpha, self).__init__()
-        self.alpha = alpha 
-
-    def on_epoch_begin(self, epoch, logs={}):
-        K.set_value(self.alpha, epoch)
-             
-
 def train(network, data_gen, save_dir, epochs=30):
     os.makedirs(save_dir, exist_ok=True)
     network.model.fit(
@@ -130,8 +123,7 @@ def train(network, data_gen, save_dir, epochs=30):
             # We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96.""
             # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
             callbacks.LearningRateScheduler(
-                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch)),
-            changeAlpha(alpha=network.global_step)
+                schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch))
         ]
     )
 
