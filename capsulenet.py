@@ -7,7 +7,7 @@ from layers import PrimaryCaps, ConvCaps, ClassCapsules
 from metrics import specificity, sensitivity, f1_score
 K.set_image_data_format('channels_last')
 
-# TODO: simple data normalization
+# TODO: Data generators have some issues - need to investigate this
 # TODO: How to test? divide data into 10 data sets, then run K-fold validation for different validation splits?
 # TODO: Do we need normalization in the m_step?
 # TODO: Analyze the problems that Gritzman mentions!
