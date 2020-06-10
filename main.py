@@ -19,7 +19,7 @@ CLASSES = 4
 
 
 if __name__ == "__main__":
-    cn = CapsNet(n_class=CLASSES, input_shape=INPUT_SHAPE)
+    cn = CapsNet(n_class=CLASSES, input_shape=INPUT_SHAPE, batch_size=BATCH_SIZE)
 
     data_gen = DataGen(
         batch_size=BATCH_SIZE, 
@@ -27,7 +27,7 @@ if __name__ == "__main__":
         target_size=INPUT_SHAPE[:2], 
         validation_split=0.1
         )
-    # cn_log_dir = RESULTS_BASE_DIR/cn.model.name/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_epochs_{EPOCHS}"
+    cn_log_dir = RESULTS_BASE_DIR/cn.model.name/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_epochs_{EPOCHS}"
     train(
         network=cn, 
         data_gen=data_gen, 

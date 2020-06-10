@@ -1,8 +1,3 @@
-"""
-Capsule network implementation based on CapsNet paper https://arxiv.org/pdf/1710.09829.pdf
-Code is borrowing from: https://github.com/XifengGuo/CapsNet-Keras and https://github.com/bojone/Capsule/
-"""
-
 import os
 from contextlib import redirect_stdout
 import tensorflow as tf
@@ -12,21 +7,13 @@ from layers import PrimaryCaps, ConvCaps, ClassCapsules
 from metrics import specificity, sensitivity, f1_score
 K.set_image_data_format('channels_last')
 
-# done:
-# TODO: Spread loss function
-# TODO: learnign rate?
-# TODO: optimizer? expontential decay?
 # TODO: simple data normalization
-# TODO: Regularizations?
-
 # TODO: How to test? divide data into 10 data sets, then run K-fold validation for different validation splits?
 # TODO: Do we need normalization in the m_step?
 # TODO: Analyze the problems that Gritzman mentions!
 # TODO: tests with data augmentation?
 
 # TODO: Rethink the structure of my code
-# TODO: spread loss - wtf the numbers?
-# TODO: spread loss - what is the relation between this number and a batch size?
 # TODO: move spread loss outisde
 # TODO: tensorflow vs tensorflow.keras.backend??
 # TODO: switch from direct tensorflow to keras.backend?
@@ -40,42 +27,52 @@ K.set_image_data_format('channels_last')
 # TODO: check for proper input shape
 # TODO: preety formating
 
+
 class CapsNet():
     def __init__(self,
                  input_shape=[32, 32, 1],
+                 batch_size=64,
                  lr=3e-3,
                  lr_decay=0.96,
                  n_class=4,
                  routings=3):
         self.input_shape = input_shape
+        self.batch_size = batch_size
         self.n_class = n_class
-        # self.global_step = 0
         self.global_step = K.variable(value=0)
         self.lr = lr
         self.lr_decay = lr_decay
-        self.model = self._create_model()
-
-   
-    def _create_model(self):
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
+        self.regularizer = regularizers.l2(0.0000002)
+        self.model = self._create_model()
+
+    def _create_model(self):
         # A = B = C = D = 32
+        # smaller values for POCs
         A = 8
         B = 8
         C = 8
         D = 8
-        reg = regularizers.l2(0.0000002)
         inputs = layers.Input(shape=self.input_shape)
-        conv = layers.Conv2D(filters=A, kernel_size=5, strides=2,
-                             padding='same', activation='relu', name='conv1')(inputs)
+        conv = layers.Conv2D(
+            filters=A, kernel_size=5, strides=2,
+            padding='same', activation='relu',
+            name='conv1')(inputs)
         [pc_act, pc_pose] = PrimaryCaps(
-            capsules=B, kernel_size=1, strides=1, padding='valid', name='primCaps')(conv)
-        [cc1_act, cc1_pose] = ConvCaps(capsules=C, kernel_size=3, strides=2, padding='valid',
-                                       routings=3, weights_reg=reg, name='conv_caps_1')([pc_act, pc_pose])
-        [cc2_act, cc2_pose] = ConvCaps(capsules=D, kernel_size=3, strides=1, padding='valid',
-                                       routings=3, weights_reg=reg, name='conv_caps_2')([cc1_act, cc1_pose])
+            capsules=B, kernel_size=1, strides=1, padding='valid',
+            name='primCaps')(conv)
+        [cc1_act, cc1_pose] = ConvCaps(
+            capsules=C, kernel_size=3, strides=2, padding='valid',
+            routings=3, weights_reg=self.regularizer,
+            name='conv_caps_1')([pc_act, pc_pose])
+        [cc2_act, cc2_pose] = ConvCaps(
+            capsules=D, kernel_size=3, strides=1, padding='valid',
+            routings=3, weights_reg=self.regularizer,
+            name='conv_caps_2')([cc1_act, cc1_pose])
         [fc_act, fc_pose] = ClassCapsules(
-            capsules=self.n_class, routings=3, weights_reg=reg, name='class_caps')([cc2_act, cc2_pose])
+            capsules=self.n_class, routings=3, weights_reg=self.regularizer,
+            name='class_caps')([cc2_act, cc2_pose])
         model = models.Model(inputs, fc_act, name='EM-CapsNet')
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
@@ -88,20 +85,22 @@ class CapsNet():
         return model
 
     def spread_loss(self, y_true, y_pred):
-        # "The margin that we set is: 
+        # "The margin that we set is:
         # margin = 0.2 + .79 * tf.sigmoid(tf.minimum(10.0, step / 50000.0 - 4))
         # where step is the training step. We trained with batch size of 64."
         # https://openreview.net/forum?id=HJWLfGWRb
         m_min = 0.2
         m_delta = 0.79
-        p = 50000.0 * 64.0
-        margin = m_min + m_delta * K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
+        p = 50000.0 * 64.0 / self.batch_size
+        margin = m_min + m_delta * \
+            K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
         a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1, keepdims=True)
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
         return K.mean(K.sum(loss))
+
 
 def train(network, data_gen, save_dir, epochs=30):
     os.makedirs(save_dir, exist_ok=True)
@@ -111,7 +110,7 @@ def train(network, data_gen, save_dir, epochs=30):
         validation_data=data_gen.validation_generator,
         callbacks=[
             callbacks.CSVLogger(f"{save_dir}/log.csv"),
-            # We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96.""
+            # "We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96."
             # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
             callbacks.LearningRateScheduler(
                 schedule=lambda epoch, lr: lr * network.lr_decay ** K.minimum(20000.0, epoch))
