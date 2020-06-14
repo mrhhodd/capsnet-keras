@@ -6,7 +6,7 @@
 #SBATCH --gres=gpu:2
 #SBATCH --time 1:00:00
 
-export LD_LIBRARY_PATH=/net/people/plgmwnetrzak/magisterka/cuda:$LD_LIBRARY_PATH 
+export LD_LIBRARY_PATH=/net/people/plgmwnetrzak/magisterka/cuda/lib64:$LD_LIBRARY_PATH 
 export PYTHONPATH=/net/people/plgmwnetrzak/magisterka/capsnet-keras:$PYTHONPATH 
 
 SHAPE=124 \
