@@ -13,4 +13,4 @@ SHAPE=124 \
 DATA_DIR=/people/plgmwnetrzak/data/124x124_OCT2017 \
 RESULTS_BASE_DIR=/people/plgmwnetrzak/result/124x124_OCT2017 \
 EPOCHS=2 BATCH_SIZE=16 \
-python /net/people/plgmwnetrzak/magisterka/capsnet_keras/main.py
+python /net/people/plgmwnetrzak/magisterka/capsnet-keras/main.py
