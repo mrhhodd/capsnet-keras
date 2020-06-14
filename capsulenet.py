@@ -25,7 +25,7 @@ K.set_image_data_format('channels_last')
 # TODO: currently only for Heigth==Weight = worth expanding?
 # TODO: add some exception for base class instantiation
 # TODO: check for proper input shape
-# TODO: preety formating
+# TODO: pretty formating
 
 
 class CapsNet():
@@ -99,6 +99,8 @@ class CapsNet():
         a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1, keepdims=True)
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
+        tf.print(loss)
+        tf.print(K.mean(K.sum(loss)))
         return K.mean(K.sum(loss))
 
 
@@ -130,7 +132,7 @@ def _log_results(model, log_dir, data_gen):
     with open(log_dir/"evaluate.txt", "w") as f:
         with redirect_stdout(f):
             print(f"{model.name} result on a test set:")
-            model.evaluate(data_gen.test_generator)
+            model.evaluate(data_gen.validation_generator)
 
     # save weights to file
     model.save_weights(str(log_dir/"trained_model.h5"))
