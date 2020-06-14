@@ -97,10 +97,12 @@ class CapsNet():
         a_i = tf.multiply(1 - y_true, y_pred)
         a_i = a_i[a_i != 0]
         a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1, keepdims=True)
+        tf.print("AI", a_i)
+        tf.print("AT", a_t)
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
-        tf.print(loss)
-        tf.print(K.mean(K.sum(loss)))
+        tf.print("LOSS", loss)
+        tf.print("LOSS RETURN", K.mean(K.sum(loss)))
         return K.mean(K.sum(loss))
 
 
