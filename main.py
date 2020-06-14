@@ -12,7 +12,7 @@ INPUT_SHAPE = (SHAPE, SHAPE, 1)
 DATA_DIR = os.getenv('DATA_DIR')
 RESULTS_BASE_DIR = Path(os.getenv('RESULTS_BASE_DIR'))
 EPOCHS = int(os.getenv('EPOCHS'))
-BATCH_SIZE = os.getenv('BATCH_SIZE')
+BATCH_SIZE = int(os.getenv('BATCH_SIZE'))
 
 
 if __name__ == "__main__":
