@@ -11,7 +11,7 @@ SHAPE = int(os.getenv('SHAPE', 128))
 INPUT_SHAPE = (SHAPE, SHAPE, 1)
 DATA_DIR = os.getenv('DATA_DIR')
 RESULTS_BASE_DIR = Path(os.getenv('RESULTS_BASE_DIR'))
-EPOCHS = os.getenv('EPOCHS')
+EPOCHS = int(os.getenv('EPOCHS'))
 BATCH_SIZE = os.getenv('BATCH_SIZE')
 
 
