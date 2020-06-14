@@ -94,14 +94,10 @@ class CapsNet():
         p = 50000.0 * 64.0 / self.batch_size
         margin = m_min + m_delta * \
             K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
-        a_i = tf.multiply(1 - y_true, y_pred)
-        a_i = a_i[a_i != 0]
-        a_t = tf.reduce_sum(tf.multiply(y_pred, y_true), axis=1, keepdims=True)
+        a_i = K.reshape(tf.boolean_mask(y_pred, 1 - y_true), shape=(-1, self.n_class - 1))
+        a_t = K.reshape(tf.boolean_mask(y_pred, y_true), shape=(-1, 1))
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
-        tf.print("####")
-        tf.print("a_i", a_i, K.reshape(tf.boolean_mask(y_pred, 1 - y_true), shape=(-1, self.n_class - 1)))
-        tf.print("a_t", a_t, K.reshape(tf.boolean_mask(y_pred, y_true), shape=(-1, 1)))
         # tf.print("y_true, y_pred", y_true, y_pred)
         # tf.print("AI, AT", a_i, a_t)
         # tf.print("LOSS", loss)
