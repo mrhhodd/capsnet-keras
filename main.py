@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-sys.path.insert(0,'capsnet_keras')
+# sys.path.insert(0,'capsnet_keras')
 
 from capsulenet import CapsNet, train
 from data_generators import DataGen
