@@ -446,5 +446,8 @@ def _routing_e_step(means, std_dev, out_act, votes):
     # E_step 3 - recompute the R matrix values
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
     zz = K.log(out_act + K.epsilon()) + prob
+    tf.print("#####")
+    tf.print("BEFORE SOFTMAX:", zz)
     rr = K.softmax(zz, axis=3)
+    tf.print("AFTER SOFTMAX:", zz)
     return rr
