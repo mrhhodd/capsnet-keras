@@ -370,6 +370,8 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
 
     # return out_act and means for parent capsule poses
     # # print("\n TIME", "routing", tf.constant(time.time()-t0))
+    tf.print("##### end of routing")
+    tf.print(out_act[0][0][0])
     return out_act, means
 
 
