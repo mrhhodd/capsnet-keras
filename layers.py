@@ -449,10 +449,10 @@ def _routing_e_step(means, std_dev, out_act, votes):
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
     zz = K.log(out_act + K.epsilon()) + prob
     tf.print("#####")
-    tf.print(zz)
+    tf.print(zz[0])
     # tf.print("BEFORE SOFTMAX:", zz)
     rr = K.softmax(zz, axis=3)
     # tf.print("AFTER SOFTMAX:", zz)
     tf.print("#####")
-    tf.print(rr)
+    tf.print(rr[0])
     return rr
