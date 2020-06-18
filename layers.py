@@ -451,7 +451,7 @@ def _routing_e_step(means, std_dev, out_act, votes):
     # tf.print("zz shape", tf.shape(zz))
     # tf.print("zz", zz[0][0][0])
     # # tf.print("BEFORE SOFTMAX:", zz)
-    # rr = K.softmax(zz, axis=3)
+    rr = K.softmax(zz, axis=3)
     # # tf.print("AFTER SOFTMAX:", zz)
     # tf.print("#####")
     # tf.print("rr shape",tf.shape(rr))
