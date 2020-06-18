@@ -282,11 +282,13 @@ class ClassCapsules(BaseCaps):
         # reshape output activation and pose
         # out_act shape: [batch_size, out_capsules, 1]
         # out_pose shape: [batch_size, out_capsules, 4, 4]
+        tf.print("####")
+        # tf.print("IN_ACT return", in_act_tiled)
         out_act, out_pose = self.routing_method(
-            in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
+            in_act_tiled, votes, self.beta_a, self.beta_v, self.routings, log=True)
         out_act = K.reshape(out_act, [batch_size, self.capsules])
         out_pose = K.reshape(out_pose, [batch_size, self.capsules, 4, 4])
-        # # tf.print("OUT_ACT return", out_act[0])
+        tf.print("OUT_ACT return", out_act)
         # # print("\n TIME", self.name, tf.constant(time.time()-t0))
         return out_act, out_pose
 
@@ -332,7 +334,7 @@ class ClassCapsules(BaseCaps):
         return ((batch_size, self.capsules), (batch_size, self.capsules, 4, 4))
 
 
-def em_routing(in_act, votes, beta_a, beta_v, routings):
+def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     t0=time.time()
     batch_size = tf.shape(votes)[0]
     # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
@@ -447,7 +449,10 @@ def _routing_e_step(means, std_dev, out_act, votes):
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
     zz = K.log(out_act + K.epsilon()) + prob
     tf.print("#####")
-    tf.print("BEFORE SOFTMAX:", zz)
+    tf.print(zz)
+    # tf.print("BEFORE SOFTMAX:", zz)
     rr = K.softmax(zz, axis=3)
-    tf.print("AFTER SOFTMAX:", zz)
+    # tf.print("AFTER SOFTMAX:", zz)
+    tf.print("#####")
+    tf.print(rr)
     return rr
