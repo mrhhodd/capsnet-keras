@@ -103,7 +103,7 @@ class BaseCaps(layers.Layer):
             name='beta_a',
             shape=[self.capsules],
             # initializer='glorot_uniform',
-            initializer=initializers.TruncatedNormal(mean=-1000.0, stddev=500.0),
+            initializer=initializers.TruncatedNormal(mean=-1500.0, stddev=750.0),
             # regularizer=self.weights_regularizer,
             trainable=True)
 
@@ -239,7 +239,7 @@ class ClassCapsules(BaseCaps):
                                                              4, 4),
                                                       initializer=paper_initializer,
                                                     #   regularizer=self.weights_regularizer,
-
+                                                      regularizer=None,
                                                       trainable=True)
 
         self.voting_map, self.child_parent_map = self._generate_voting_map(
