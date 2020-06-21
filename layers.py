@@ -4,6 +4,15 @@ from tensorflow.keras import backend as K
 from tensorflow.keras import layers, activations, initializers
 import time
 
+# Recently we are using a new initialization method: 
+# every 4x4 is initialized with I + noise of 0.03: (1 on the diag, random uniform noise in the range +/- 0.03 everywhere else). 
+# This new method is more scale able and easier to train. 
+def paper_initializer(shape)
+    # assert shape_dims >= 2
+    assert shape[-1] == shape[-2], "last two value has to be an nxn matrix"
+    return initializers.Identity()(shape=shape[-2:]) + initializers.RandomUniform(minval=-0.03, maxval=0.03)(shape=shape)
+
+print(values1 + values2)
 class PrimaryCaps(layers.Layer):
     def __init__(self, capsules, strides, padding, kernel_size, **kwargs):
         self.capsules = capsules
@@ -18,14 +27,14 @@ class PrimaryCaps(layers.Layer):
                                                    self.kernel_size,
                                                    input_shape[-1],
                                                    self.capsules * 16),
-                                            initializer='glorot_uniform',
+                                            initializer=paper_initializer,
                                             trainable=True)
         self.act_weights = self.add_weight(name='act',
                                            shape=(self.kernel_size,
                                                   self.kernel_size,
                                                   input_shape[-1],
                                                   self.capsules),
-                                           initializer='glorot_uniform',
+                                           initializer=paper_initializer,
                                            trainable=True)
 
     def call(self, inputs):
@@ -135,7 +144,7 @@ class ConvCaps(BaseCaps):
                                                              self.kernel_size * self.kernel_size * self.in_capsules,
                                                              self.capsules,
                                                              4, 4),
-                                                      initializer='glorot_uniform',
+                                                      initializer=paper_initializer,
                                                       regularizer=self.weights_regularizer,
                                                       trainable=True)
 
@@ -227,7 +236,7 @@ class ClassCapsules(BaseCaps):
                                                              self.in_capsules,
                                                              self.capsules,
                                                              4, 4),
-                                                      initializer='glorot_uniform',
+                                                      initializer=paper_initializer,
                                                     #   regularizer=self.weights_regularizer,
 
                                                       trainable=True)
