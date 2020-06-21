@@ -431,6 +431,7 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # M_step 5 - compute costs for each parent capsule
     # beta_v shape: [batch_size, 1, 1, 1, out_capsules, 1]
     # costs shape: [batch_size, 1, 1, out_capsules, 16]
+    tf.print("RR_SUM BEFORE AND AFTER THE NORM_FACTOR:", norm_factor, tf.reduce_mean(rr_sum), tf.reduce_mean(rr_sum * norm_factor))
     costs = beta_v + tf.multiply(K.log(std_dev + K.epsilon()), rr_sum * norm_factor)
     # print("\n TIME", "5 m_step routing", time.time()-t1);t1=time.time()
 
