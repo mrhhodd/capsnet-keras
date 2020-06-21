@@ -35,7 +35,8 @@ class CapsNet():
                  lr=3e-3,
                  lr_decay=0.96,
                  n_class=4,
-                 routings=3):
+                #  routings=3):
+                 routings=2):
         self.input_shape = input_shape
         self.batch_size = batch_size
         self.n_class = n_class
@@ -91,8 +92,7 @@ class CapsNet():
         # where step is the training step. We trained with batch size of 64."
         # https://openreview.net/forum?id=HJWLfGWRb
 
-        # m_min = 0.2
-        m_min = 0.4 # bigger margin == less likely to activate all capsules?
+        m_min = 0.2
         m_delta = 0.79
         p = 50000.0 * 64.0 / self.batch_size
         margin = m_min + m_delta * \
@@ -101,7 +101,7 @@ class CapsNet():
         a_t = K.reshape(tf.boolean_mask(y_pred, y_true), shape=(-1, 1))
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
-        tf.print("Y_PRED MEAN:\n", tf.reduce_mean(y_pred))
+        # tf.print("Y_PRED MEAN:\n", tf.reduce_mean(y_pred))
         return K.mean(K.sum(loss))
 
 
