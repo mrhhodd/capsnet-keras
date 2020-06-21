@@ -12,10 +12,7 @@ class DataGen():
             target_size=target_size, 
             color_mode="grayscale", 
             batch_size=batch_size,
-            subset="training",
-            save_to_dir=data_dir,
-            save_prefix="testing",
-            save_format="jpg",
+            subset="training"
             )
         self.validation_generator = data_gen.flow_from_directory(
             directory=data_dir, 

@@ -40,10 +40,10 @@ class PrimaryCaps(layers.Layer):
                                            trainable=True)
 
     def call(self, inputs):
-        # tf.print("####")
-        # tf.print(tf.reduce_max(inputs))
-        # tf.print(tf.reduce_mean(inputs))
-        # tf.print(tf.reduce_min(inputs))
+        tf.print("####")
+        tf.print(tf.reduce_max(inputs))
+        tf.print(tf.reduce_mean(inputs))
+        tf.print(tf.reduce_min(inputs))
         # tf.print("####")
         # # tf.print("in_act primary caps", inputs[0])
         # # tf.print("in_act primary caps", inputs[0])
