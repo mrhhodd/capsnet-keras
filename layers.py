@@ -363,7 +363,7 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
 
     for i in range(0, routings):
         # lambda value based on comments in hintons review
-        lambd = 0.01 * (1 - tf.pow(0.95, tf.cast(i, tf.float32)))
+        lambd = 0.01 * (1 - tf.pow(0.95, tf.cast(i + 1, tf.float32)))
 
         # compute output activations, means and standard deviations
         # out_act shape
