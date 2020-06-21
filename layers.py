@@ -389,8 +389,8 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # print("\n TIME", "1 m_step routing", time.time()-t1);t1=time.time()
 
     # calculate normalization factor - so that beta values are always relevant
-    child_caps = float(rr_prime.get_shape().as_list()[2])
-    parent_caps = float(rr_prime.get_shape().as_list()[3])
+    child_caps = float(tf.shape(rr_tiled)[2])
+    parent_caps = float(tf.shape(rr_tiled)[3])
     norm_factor = 100 * parent_caps / child_caps
 
     # Compute the sum of all input capsules in rr matrix
