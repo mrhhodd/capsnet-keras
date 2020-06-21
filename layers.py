@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras import backend as K
-from tensorflow.keras import layers, activations
+from tensorflow.keras import layers, activations, initializers
 import time
 
 class PrimaryCaps(layers.Layer):
@@ -90,7 +90,8 @@ class BaseCaps(layers.Layer):
         self.beta_a = self.add_weight(
             name='beta_a',
             shape=[self.capsules],
-            initializer='glorot_uniform',
+            # initializer='glorot_uniform',
+            initializer=initializers.TruncatedNormal(mean=-1000.0, stdev=500.0),
             regularizer=self.weights_regularizer,
             trainable=True)
 
