@@ -12,7 +12,6 @@ def paper_initializer(shape):
     assert shape[-1] == shape[-2], "last two value has to be an nxn matrix"
     return initializers.Identity()(shape=shape[-2:]) + initializers.RandomUniform(minval=-0.03, maxval=0.03)(shape=shape)
 
-print(values1 + values2)
 class PrimaryCaps(layers.Layer):
     def __init__(self, capsules, strides, padding, kernel_size, **kwargs):
         self.capsules = capsules
