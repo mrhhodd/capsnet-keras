@@ -56,7 +56,8 @@ class CapsNet():
         D = 8
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
-            filters=A, kernel_size=5, strides=2,
+            # filters=A, kernel_size=5, strides=2,
+            filters=A, kernel_size=9, strides=2,
             padding='same', activation='relu',
             name='conv1')(inputs)
         [pc_act, pc_pose] = PrimaryCaps(
@@ -98,6 +99,8 @@ class CapsNet():
         a_t = K.reshape(tf.boolean_mask(y_pred, y_true), shape=(-1, 1))
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
+        tf.print("## Y_PRED:")
+        tf.print(y_pred)
         return K.mean(K.sum(loss))
 
 
