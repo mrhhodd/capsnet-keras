@@ -40,10 +40,10 @@ class PrimaryCaps(layers.Layer):
                                            trainable=True)
 
     def call(self, inputs):
-        tf.print("####")
-        tf.print(tf.reduce_max(inputs))
-        tf.print(tf.reduce_mean(inputs))
-        tf.print(tf.reduce_min(inputs))
+        # tf.print("####")
+        # tf.print(tf.reduce_max(inputs))
+        # tf.print(tf.reduce_mean(inputs))
+        # tf.print(tf.reduce_min(inputs))
         # tf.print("####")
         # # tf.print("in_act primary caps", inputs[0])
         # # tf.print("in_act primary caps", inputs[0])
@@ -102,8 +102,8 @@ class BaseCaps(layers.Layer):
         self.beta_a = self.add_weight(
             name='beta_a',
             shape=[self.capsules],
-            initializer='glorot_uniform',
-            # initializer=initializers.TruncatedNormal(mean=-1500.0, stddev=500.0),
+            # initializer='glorot_uniform',
+            initializer=initializers.TruncatedNormal(mean=-2500.0, stddev=1250.0),
             # regularizer=self.weights_regularizer,
             trainable=True)
 
