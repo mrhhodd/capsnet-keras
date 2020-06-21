@@ -388,9 +388,14 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     rr_tiled = K.tile(rr_scaled, [1, 1, 1, 1, 16])
     # print("\n TIME", "1 m_step routing", time.time()-t1);t1=time.time()
 
+    # calculate normalization factor - so that beta values are always relevant
+    child_caps = float(rr_prime.get_shape().as_list()[2])
+    parent_caps = float(rr_prime.get_shape().as_list()[3])
+    norm_factor = 100 * parent_caps / child_caps
+
     # Compute the sum of all input capsules in rr matrix
     # rr_sum shape: [batch_size, 1, 1, out_capsules, 16]
-    rr_sum = tf.reduce_sum(rr_tiled, axis=2, keepdims=True)
+    rr_sum = tf.multiply(tf.reduce_sum(rr_tiled, axis=2, keepdims=True), norm_factor)
     # print("\n TIME", "2 m_step routing", time.time()-t1);t1=time.time()
 
     # M_step 3 - compute means for each parent capsule
