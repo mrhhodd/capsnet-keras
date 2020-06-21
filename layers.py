@@ -29,14 +29,14 @@ class PrimaryCaps(layers.Layer):
                                                    self.kernel_size,
                                                    input_shape[-1],
                                                    self.capsules * 16),
-                                            initializer=paper_initializer,
+                                            initializer='glorot_uniform',
                                             trainable=True)
         self.act_weights = self.add_weight(name='act',
                                            shape=(self.kernel_size,
                                                   self.kernel_size,
                                                   input_shape[-1],
                                                   self.capsules),
-                                           initializer=paper_initializer,
+                                           initializer='glorot_uniform',
                                            trainable=True)
 
     def call(self, inputs):
