@@ -13,7 +13,7 @@ class DataGen():
             color_mode="grayscale", 
             batch_size=batch_size,
             subset="training",
-            save_to_dir=True,
+            save_to_dir=data_dir/"saved",
             save_prefix="testing",
             save_format="jpg",
             )
