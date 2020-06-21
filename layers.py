@@ -341,11 +341,16 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     rr = K.mean(K.ones_like(votes) / votes.shape[3], axis=-1, keepdims=True)
 
     # beta_v shape: [batch_size, 1, 1, out_capsules, 1]
+    tf.print("betas:")
+    tf.print(beta_v)
     beta_v = K.reshape(beta_v, [1, 1, 1, votes.shape[3], 1])
+    tf.print(beta_v)
     beta_v = K.tile(beta_v, (batch_size, 1, 1, 1, 1))
 
     # beta_a shape: [batch_size, 1, 1, out_capsules]
+    tf.print(beta_a)
     beta_a = K.reshape(beta_a, [1, 1, 1, votes.shape[3]])
+    tf.print(beta_a)
     beta_a = K.tile(beta_a, (batch_size, 1, 1, 1))
 
     for i in range(0, routings):
