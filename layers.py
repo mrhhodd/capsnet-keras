@@ -81,19 +81,18 @@ class BaseCaps(layers.Layer):
 
         # beta_v shape: [capsules]
         # beta_a shape: [capsules]
-        self.beta_v = self.add_weight(
-            name='beta_v',
-            shape=[self.capsules],
-            initializer='glorot_uniform',
-            regularizer=self.weights_regularizer,
-            trainable=True)
-        self.beta_a = self.add_weight(
-            name='beta_a',
-            shape=[self.capsules],
-            # initializer='glorot_uniform',
-            initializer=initializers.TruncatedNormal(mean=-1000.0, stddev=500.0),
-            regularizer=self.weights_regularizer,
-            trainable=True)
+        # self.beta_v = self.add_weight(
+        #     name='beta_v',
+        #     shape=[self.capsules],
+        #     initializer='glorot_uniform',
+        #     regularizer=self.weights_regularizer,
+        #     trainable=True)
+        # self.beta_a = self.add_weight(
+        #     name='beta_a',
+        #     shape=[self.capsules],
+        #     initializer='glorot_uniform',
+        #     regularizer=self.weights_regularizer,
+        #     trainable=True)
 
     def _generate_voting_map(self, size_in, size_out, kernel_size, stride):
         voting_map = np.zeros((size_out ** 2, size_in ** 2))
@@ -195,8 +194,10 @@ class ConvCaps(BaseCaps):
         # run routing to compute output activation and pose
         # out_act shape: [batch_size, out_height, out_width, out_capsules, 1]
         # out_pose shape: [batch_size, out_height, out_width, out_capsules, 4, 4]
+        # out_act, out_pose = self.routing_method(
+        #     in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
         out_act, out_pose = self.routing_method(
-            in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
+            in_act_tiled, votes, self.routings)
         out_act = K.reshape(
             out_act, [batch_size, self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
         out_pose = K.reshape(
@@ -226,8 +227,7 @@ class ClassCapsules(BaseCaps):
                                                              self.capsules,
                                                              4, 4),
                                                       initializer='glorot_uniform',
-                                                      regularizer=self.weights_regularizer,
-
+                                                    #   regularizer=self.weights_regularizer,
                                                       trainable=True)
 
         self.voting_map, self.child_parent_map = self._generate_voting_map(
@@ -284,8 +284,10 @@ class ClassCapsules(BaseCaps):
         # out_act shape: [batch_size, out_capsules, 1]
         # out_pose shape: [batch_size, out_capsules, 4, 4]
         # tf.print("IN_ACT return", in_act_tiled)
+        # out_act, out_pose = self.routing_method(
+        #     in_act_tiled, votes, self.beta_a, self.beta_v, self.routings, log=True)
         out_act, out_pose = self.routing_method(
-            in_act_tiled, votes, self.beta_a, self.beta_v, self.routings, log=True)
+            in_act_tiled, votes, self.routings, log=True)
         out_act = K.reshape(out_act, [batch_size, self.capsules])
         out_pose = K.reshape(out_pose, [batch_size, self.capsules, 4, 4])
         # # print("\n TIME", self.name, tf.constant(time.time()-t0))
@@ -331,8 +333,10 @@ class ClassCapsules(BaseCaps):
         batch_size = input_shape[0][0]
         return ((batch_size, self.capsules), (batch_size, self.capsules, 4, 4))
 
+import tensorflow.contrib.slim as slim
 
-def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
+# def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
+def em_routing(in_act, votes, routings, log=False):
     t0=time.time()
     batch_size = tf.shape(votes)[0]
     # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
@@ -341,12 +345,22 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     # TODO: rewrite this?
     rr = K.mean(K.ones_like(votes) / votes.shape[3], axis=-1, keepdims=True)
 
+    beta_a = slim.model_variable(
+        name='beta_a', 
+        shape=[1, 1, 1, 1, votes.shape[3], 1], 
+        dtype=tf.float32, 
+        initializer=initializers.GlorotUniform())
+  
+    beta_v = slim.model_variable(
+        name='beta_a', 
+        shape=[1, 1, 1, 1, votes.shape[3], 1], 
+        dtype=tf.float32, 
+        initializer=initializers.GlorotUniform())
+  
     # beta_v shape: [batch_size, 1, 1, out_capsules, 1]
-    beta_v = K.reshape(beta_v, [1, 1, 1, votes.shape[3], 1])
     beta_v = K.tile(beta_v, (batch_size, 1, 1, 1, 1))
 
     # beta_a shape: [batch_size, 1, 1, out_capsules]
-    beta_a = K.reshape(beta_a, [1, 1, 1, votes.shape[3]])
     beta_a = K.tile(beta_a, (batch_size, 1, 1, 1))
 
     for i in range(0, routings):
