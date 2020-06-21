@@ -7,7 +7,7 @@ import time
 # Recently we are using a new initialization method: 
 # every 4x4 is initialized with I + noise of 0.03: (1 on the diag, random uniform noise in the range +/- 0.03 everywhere else). 
 # This new method is more scale able and easier to train. 
-def paper_initializer(shape)
+def paper_initializer(shape):
     # assert shape_dims >= 2
     assert shape[-1] == shape[-2], "last two value has to be an nxn matrix"
     return initializers.Identity()(shape=shape[-2:]) + initializers.RandomUniform(minval=-0.03, maxval=0.03)(shape=shape)
