@@ -92,7 +92,7 @@ class BaseCaps(layers.Layer):
             shape=[self.capsules],
             # initializer='glorot_uniform',
             # initializer=initializers.TruncatedNormal(mean=-12000.0, stddev=6000.0),
-            initializer=initializers.TruncatedNormal(mean=-10000.0, stddev=5000.0),
+            initializer=initializers.TruncatedNormal(mean=-100.0, stddev=5.0),
             regularizer=self.weights_regularizer,
             trainable=True)
 
@@ -374,7 +374,7 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     # # print("\n TIME", "routing", tf.constant(time.time()-t0))
     # tf.print("##### end of routing")
     # tf.print(out_act[0][0][0])
-    tf.print("\nmean: ", tf.reduce_mean(out_act), "max: ", tf.reduce_max(out_act), "min: ", tf.reduce_min(out_act))
+    tf.print("\nmean: ", tf.reduce_mean(out_act), " # max: ", tf.reduce_max(out_act), " # min: ", tf.reduce_min(out_act))
     return out_act, means
 
 
