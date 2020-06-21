@@ -85,7 +85,7 @@ class BaseCaps(layers.Layer):
             name='beta_v',
             shape=[self.capsules],
             initializer='glorot_uniform',
-            regularizer=self.weights_regularizer,
+            # regularizer=self.weights_regularizer,
             trainable=True)
         self.beta_a = self.add_weight(
             name='beta_a',
@@ -93,7 +93,7 @@ class BaseCaps(layers.Layer):
             # initializer='glorot_uniform',
             # initializer=initializers.TruncatedNormal(mean=-12000.0, stddev=6000.0),
             initializer=initializers.TruncatedNormal(mean=-100.0, stddev=5.0),
-            regularizer=self.weights_regularizer,
+            # regularizer=self.weights_regularizer,
             trainable=True)
 
     def _generate_voting_map(self, size_in, size_out, kernel_size, stride):
