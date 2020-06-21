@@ -90,7 +90,9 @@ class CapsNet():
         # margin = 0.2 + .79 * tf.sigmoid(tf.minimum(10.0, step / 50000.0 - 4))
         # where step is the training step. We trained with batch size of 64."
         # https://openreview.net/forum?id=HJWLfGWRb
-        m_min = 0.2
+
+        # m_min = 0.2
+        m_min = 0.4
         m_delta = 0.79
         p = 50000.0 * 64.0 / self.batch_size
         margin = m_min + m_delta * \
