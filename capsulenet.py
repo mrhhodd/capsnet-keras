@@ -52,7 +52,7 @@ class CapsNet():
         # smaller values for POCs
         A = 16
         B = 16
-        C = 16
+        C = 8
         D = 8
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
