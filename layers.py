@@ -91,7 +91,8 @@ class BaseCaps(layers.Layer):
             name='beta_a',
             shape=[self.capsules],
             # initializer='glorot_uniform',
-            initializer=initializers.TruncatedNormal(mean=-12000.0, stddev=6000.0),
+            # initializer=initializers.TruncatedNormal(mean=-12000.0, stddev=6000.0),
+            initializer=initializers.TruncatedNormal(mean=-11500.0, stddev=6000.0),
             regularizer=self.weights_regularizer,
             trainable=True)
 
