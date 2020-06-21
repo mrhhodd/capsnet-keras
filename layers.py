@@ -385,7 +385,7 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     # # print("\n TIME", "routing", tf.constant(time.time()-t0))
     # tf.print("##### end of routing")
     # tf.print(out_act[0][0][0])
-    tf.print("\nmean: ", tf.reduce_mean(out_act), " # max: ", tf.reduce_max(out_act), " # min: ", tf.reduce_min(out_act))
+    # tf.print("\nmean: ", tf.reduce_mean(out_act), " # max: ", tf.reduce_max(out_act), " # min: ", tf.reduce_min(out_act))
     return out_act, means
 
 
