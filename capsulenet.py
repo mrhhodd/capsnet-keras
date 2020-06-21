@@ -50,10 +50,10 @@ class CapsNet():
     def _create_model(self):
         # A = B = C = D = 32
         # smaller values for POCs
-        A = 16
+        A = 8
         B = 8
         C = 8
-        D = 16
+        D = 8
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
             # filters=A, kernel_size=5, strides=2,
