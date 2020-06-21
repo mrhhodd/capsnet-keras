@@ -396,7 +396,6 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
 
     # Compute the sum of all input capsules in rr matrix
     # rr_sum shape: [batch_size, 1, 1, out_capsules, 16]
-    rr_sum = tf.multiply(tf.reduce_sum(rr_tiled, axis=2, keepdims=True), norm_factor)
     # print("\n TIME", "2 m_step routing", time.time()-t1);t1=time.time()
 
     # M_step 3 - compute means for each parent capsule
@@ -416,6 +415,7 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # M_step 5 - compute costs for each parent capsule
     # beta_v shape: [batch_size, 1, 1, 1, out_capsules, 1]
     # costs shape: [batch_size, 1, 1, out_capsules, 16]
+    rr_sum = tf.multiply(tf.reduce_sum(rr_tiled, axis=2, keepdims=True), norm_factor)
     costs = beta_v + tf.multiply(K.log(std_dev + K.epsilon()), rr_sum)
     # print("\n TIME", "5 m_step routing", time.time()-t1);t1=time.time()
 
