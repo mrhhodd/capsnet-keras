@@ -4,12 +4,12 @@ from tensorflow.keras import backend as K
 from tensorflow.keras import layers, activations, initializers
 import time
 
-# Recently we are using a new initialization method: 
-# every 4x4 is initialized with I + noise of 0.03: (1 on the diag, random uniform noise in the range +/- 0.03 everywhere else). 
-# This new method is more scale able and easier to train. 
-
-
 def paper_initializer(shape, dtype):
+    """
+        Recently we are using a new initialization method: 
+        every 4x4 is initialized with I + noise of 0.03: (1 on the diag, random uniform noise in the range +/- 0.03 everywhere else). 
+        This new method is more scale able and easier to train. 
+    """
     # assert shape_dims >= 2
     assert shape[-1] == shape[-2], "last two value has to be an nxn matrix"
     return initializers.Identity()(shape=shape[-2:], dtype=dtype) + initializers.RandomUniform(minval=-0.03, maxval=0.03)(shape=shape, dtype=dtype)
@@ -238,8 +238,7 @@ class ClassCapsules(BaseCaps):
                                                              self.capsules,
                                                              4, 4),
                                                       initializer=paper_initializer,
-                                                    #   regularizer=self.weights_regularizer,
-                                                      regularizer=None,
+                                                      regularizer=self.weights_regularizer,
                                                       trainable=True)
 
         self.voting_map, self.child_parent_map = self._generate_voting_map(
