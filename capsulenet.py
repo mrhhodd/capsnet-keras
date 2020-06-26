@@ -94,7 +94,8 @@ class CapsNet():
 
         m_min = 0.2
         m_delta = 0.79
-        p = 50000.0 * 64.0 / self.batch_size
+        # p = 50000.0 * 64.0 / self.batch_size
+        p = 5000.0 * 64.0 / self.batch_size
         margin = m_min + m_delta * \
             K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = K.reshape(tf.boolean_mask(y_pred, 1 - y_true), shape=(-1, self.n_class - 1))
