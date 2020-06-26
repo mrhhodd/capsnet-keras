@@ -212,8 +212,7 @@ class ConvCaps(BaseCaps):
         # out_act shape: [batch_size, out_height, out_width, out_capsules, 1]
         # out_pose shape: [batch_size, out_height, out_width, out_capsules, 4, 4]
         out_act, out_pose = self.routing_method(
-            in_act_tiled, votes, self.routings)
-            # in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
+            in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
         out_act = K.reshape(
             out_act, [batch_size, self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
         out_pose = K.reshape(
@@ -302,8 +301,7 @@ class ClassCapsules(BaseCaps):
         # out_pose shape: [batch_size, out_capsules, 4, 4]
         # tf.print("IN_ACT return", in_act_tiled)
         out_act, out_pose = self.routing_method(
-            # in_act_tiled, votes, self.beta_a, self.beta_v, self.routings, log=True)
-            in_act_tiled, votes, self.routings, log=True)
+            in_act_tiled, votes, self.beta_a, self.beta_v, self.routings, log=True)
         out_act = K.reshape(out_act, [batch_size, self.capsules])
         out_pose = K.reshape(out_pose, [batch_size, self.capsules, 4, 4])
         # # print("\n TIME", self.name, tf.constant(time.time()-t0))
@@ -350,8 +348,7 @@ class ClassCapsules(BaseCaps):
         return ((batch_size, self.capsules), (batch_size, self.capsules, 4, 4))
 
 
-# def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
-def em_routing(in_act, votes, routings, log=False):
+def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     t0=time.time()
     batch_size = tf.shape(votes)[0]
     out_capsules = tf.shape(votes)[3]
