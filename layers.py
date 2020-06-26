@@ -354,7 +354,8 @@ class ClassCapsules(BaseCaps):
 
 def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     t0=time.time()
-    batch_size, _, _, out_capsules,_ = tf.shape(votes)
+    batch_size = tf.shape(votes)[0]
+    out_capsules = tf.shape(votes)[3]
     # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
     # initialize R matrix with 1/out_capsules
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
