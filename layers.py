@@ -99,7 +99,6 @@ class BaseCaps(layers.Layer):
             regularizer=None,
             trainable=True
             )
-        self.initial_beta_v = tf.identity(self.beta_v)
         self.beta_a = self.add_weight(
             name='beta_a',
             shape=[self.capsules],
@@ -108,11 +107,6 @@ class BaseCaps(layers.Layer):
             # regularizer=self.weights_regularizer,
             trainable=True
             )
-        self.initial_beta_a = tf.identity(self.beta_a)
-
-    def call(self, inputs):
-        self.beta_v = self.initial_beta_v
-        self.beta_a = self.initial_beta_a
 
     def _generate_voting_map(self, size_in, size_out, kernel_size, stride):
         voting_map = np.zeros((size_out ** 2, size_in ** 2))
@@ -394,7 +388,7 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     # # print("\n TIME", "routing", tf.constant(time.time()-t0))
     # tf.print("##### end of routing")
     # tf.print(out_act[0][0][0])
-    # tf.print("\nmean: ", tf.reduce_mean(out_act), " # max: ", tf.reduce_max(out_act), " # min: ", tf.reduce_min(out_act))
+    tf.print("\nmean: ", tf.reduce_mean(out_act), " # max: ", tf.reduce_max(out_act), " # min: ", tf.reduce_min(out_act))
     return out_act, means
 
 
