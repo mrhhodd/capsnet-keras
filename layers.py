@@ -89,8 +89,6 @@ class BaseCaps(layers.Layer):
 
         self.spatial_size_in = in_act_shape[1]
         self.in_capsules = in_act_shape[3]
-
-    def call(self, inputs):
         # beta_v shape: [capsules]
         # beta_a shape: [capsules]
         self.beta_v = self.add_weight(
@@ -101,6 +99,7 @@ class BaseCaps(layers.Layer):
             regularizer=None,
             trainable=True
             )
+        self.initial_beta_v = tf.identity(self.beta_v)
         self.beta_a = self.add_weight(
             name='beta_a',
             shape=[self.capsules],
@@ -109,6 +108,11 @@ class BaseCaps(layers.Layer):
             # regularizer=self.weights_regularizer,
             trainable=True
             )
+        self.initial_beta_a = tf.identity(self.beta_a)
+
+    def call(self, inputs):
+        self.beta_v = self.initial_beta_v
+        self.beta_a = self.initial_beta_a
 
     def _generate_voting_map(self, size_in, size_out, kernel_size, stride):
         voting_map = np.zeros((size_out ** 2, size_in ** 2))
@@ -350,8 +354,7 @@ class ClassCapsules(BaseCaps):
 
 def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     t0=time.time()
-    batch_size = tf.shape(votes)[0]
-    out_capsules = tf.shape(votes)[3]
+    batch_size, _, _, out_capsules,_ = tf.shape(votes)
     # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
     # initialize R matrix with 1/out_capsules
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
