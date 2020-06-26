@@ -98,14 +98,16 @@ class BaseCaps(layers.Layer):
             initializer='glorot_uniform',
             # regularizer=self.weights_regularizer,
             regularizer=None,
-            trainable=True)
+            # trainable=True
+            )
         self.beta_a = self.add_weight(
             name='beta_a',
             shape=[self.capsules],
             # initializer='glorot_uniform',
             initializer=initializers.TruncatedNormal(mean=-2500.0, stddev=1250.0),
             # regularizer=self.weights_regularizer,
-            trainable=True)
+            # trainable=True
+            )
 
     def _generate_voting_map(self, size_in, size_out, kernel_size, stride):
         voting_map = np.zeros((size_out ** 2, size_in ** 2))
@@ -360,7 +362,7 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     beta_a = K.reshape(beta_a, [1, 1, 1, votes.shape[3]])
     beta_a = K.tile(beta_a, (batch_size, 1, 1, 1))
 
-    for i in range(0, routings):
+    for i in range(routings):
         # lambda value based on comments in hintons review
         lambd = 0.01 * (1 - tf.pow(0.95, tf.cast(i + 1, tf.float32)))
 
