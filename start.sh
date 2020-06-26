@@ -8,10 +8,10 @@
 ## Ilość pamięci przypadającej na jeden rdzeń obliczeniowy (domyślnie 5GB na rdzeń)
 #SBATCH --mem-per-cpu=5GB
 ## Maksymalny czas trwania zlecenia (format HH:MM:SS)
-#SBATCH --time=01:00:00 
+#SBATCH --time=04:00:00 
 ## Nazwa grantu do rozliczenia zużycia zasobów
 #SBATCH -A plgcapsnet
-#SBATCH --partition=plgrid-gpu
+#SBATCH --partition=plgrid-v100
 #SBATCH --gres=gpu:8
 
 
@@ -20,7 +20,7 @@ export PYTHONPATH=/net/people/plgmwnetrzak/magisterka/capsnet-keras:$PYTHONPATH
 module add plgrid/libs/tensorflow-gpu/2.2.0-python-3.8 
 
 SHAPE=124 \
-DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/124x124_OCT2017 \
-RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/124x124_OCT2017 \
-EPOCHS=2 BATCH_SIZE=8 \
+DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_124x124_SB/1 \
+RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/OCT2017_124x124_SB/1 \
+EPOCHS=50 BATCH_SIZE=8 \
 python3 /net/people/plgmwnetrzak/magisterka/capsnet-keras/main.py
