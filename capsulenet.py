@@ -40,6 +40,7 @@ class CapsNet():
         self.batch_size = batch_size
         self.n_class = n_class
         self.global_step = K.variable(value=0)
+        self.routings = routings
         self.lr = lr
         self.lr_decay = lr_decay
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
@@ -65,14 +66,14 @@ class CapsNet():
             name='primCaps')(conv)
         [cc1_act, cc1_pose] = ConvCaps(
             capsules=C, kernel_size=3, strides=2, padding='valid',
-            routings=3, weights_reg=self.regularizer,
+            routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_1')([pc_act, pc_pose])
         [cc2_act, cc2_pose] = ConvCaps(
             capsules=D, kernel_size=3, strides=1, padding='valid',
-            routings=3, weights_reg=self.regularizer,
+            routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_2')([cc1_act, cc1_pose])
         [fc_act, fc_pose] = ClassCapsules(
-            capsules=self.n_class, routings=3, weights_reg=self.regularizer,
+            capsules=self.n_class, routings=self.routings, weights_reg=self.regularizer,
             name='class_caps')([cc2_act, cc2_pose])
         model = models.Model(inputs, fc_act, name='EM-CapsNet')
 
