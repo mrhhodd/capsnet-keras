@@ -291,7 +291,7 @@ class ClassCapsules(BaseCaps):
         # Reshape the votes for the routing purposes
         # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
         votes = tf.matmul(in_pose_tiled, weights_tiled)
-        votes = self._coord_addition(votes)
+        # votes = self._coord_addition(votes)
         votes = K.reshape(votes, (batch_size, 1, self.spatial_size_in **
                                   2 * self.in_capsules, self.capsules, 16))
 
