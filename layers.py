@@ -75,7 +75,7 @@ class PrimaryCaps(layers.Layer):
 
 
 class BaseCaps(layers.Layer):
-    def __init__(self, capsules, routings, weights_reg **kwargs):
+    def __init__(self, capsules, routings, weights_reg, **kwargs):
         self.capsules = capsules
         self.routing_method = em_routing
         self.routings = routings
