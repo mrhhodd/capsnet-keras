@@ -35,8 +35,7 @@ class CapsNet():
                  lr=3e-3,
                  lr_decay=0.96,
                  n_class=4,
-                #  routings=3):
-                 routings=2):
+                 routings=3):
         self.input_shape = input_shape
         self.batch_size = batch_size
         self.n_class = n_class
