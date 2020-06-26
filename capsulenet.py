@@ -103,9 +103,6 @@ class CapsNet():
         # loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         loss = K.maximum(0., margin - (a_t - a_i))
         self.global_step.assign(self.global_step + 1)
-        tf.print("####")
-        tf.print("Y_PRED MEAN:\n", tf.reduce_mean(y_pred))
-        tf.print("y_pred[0]:\n", y_pred[0])
         return K.mean(K.sum(loss))
 
 
