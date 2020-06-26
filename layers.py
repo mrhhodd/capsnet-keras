@@ -75,7 +75,7 @@ class PrimaryCaps(layers.Layer):
 
 
 class BaseCaps(layers.Layer):
-    def __init__(self, capsules, routings, weights_reg, **kwargs):
+    def __init__(self, capsules, routings, weights_reg **kwargs):
         self.capsules = capsules
         self.routing_method = em_routing
         self.routings = routings
@@ -90,6 +90,7 @@ class BaseCaps(layers.Layer):
         self.spatial_size_in = in_act_shape[1]
         self.in_capsules = in_act_shape[3]
 
+    def call(self, inputs):
         # beta_v shape: [capsules]
         # beta_a shape: [capsules]
         self.beta_v = self.add_weight(
@@ -98,7 +99,7 @@ class BaseCaps(layers.Layer):
             initializer='glorot_uniform',
             # regularizer=self.weights_regularizer,
             regularizer=None,
-            # trainable=True
+            trainable=True
             )
         self.beta_a = self.add_weight(
             name='beta_a',
@@ -106,7 +107,7 @@ class BaseCaps(layers.Layer):
             # initializer='glorot_uniform',
             initializer=initializers.TruncatedNormal(mean=-2500.0, stddev=1250.0),
             # regularizer=self.weights_regularizer,
-            # trainable=True
+            trainable=True
             )
 
     def _generate_voting_map(self, size_in, size_out, kernel_size, stride):
@@ -160,6 +161,7 @@ class ConvCaps(BaseCaps):
         # child-parent map shape: [out_height*out_width, kernel_size^2]
 
     def call(self, inputs):
+        super(ConvCaps, self).call(inputs)
         t0 = time.time()
         [in_act, in_pose] = inputs
         batch_size = tf.shape(in_act)[0]
@@ -210,7 +212,8 @@ class ConvCaps(BaseCaps):
         # out_act shape: [batch_size, out_height, out_width, out_capsules, 1]
         # out_pose shape: [batch_size, out_height, out_width, out_capsules, 4, 4]
         out_act, out_pose = self.routing_method(
-            in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
+            in_act_tiled, votes, self.routings)
+            # in_act_tiled, votes, self.beta_a, self.beta_v, self.routings)
         out_act = K.reshape(
             out_act, [batch_size, self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
         out_pose = K.reshape(
@@ -250,6 +253,7 @@ class ClassCapsules(BaseCaps):
             stride=1)
 
     def call(self, inputs):
+        super(ClassCapsules, self).call(inputs)
         t0=time.time()
         [in_act, in_pose] = inputs
         batch_size = tf.shape(in_act)[0]
@@ -298,7 +302,8 @@ class ClassCapsules(BaseCaps):
         # out_pose shape: [batch_size, out_capsules, 4, 4]
         # tf.print("IN_ACT return", in_act_tiled)
         out_act, out_pose = self.routing_method(
-            in_act_tiled, votes, self.beta_a, self.beta_v, self.routings, log=True)
+            # in_act_tiled, votes, self.beta_a, self.beta_v, self.routings, log=True)
+            in_act_tiled, votes, self.routings, log=True)
         out_act = K.reshape(out_act, [batch_size, self.capsules])
         out_pose = K.reshape(out_pose, [batch_size, self.capsules, 4, 4])
         # # print("\n TIME", self.name, tf.constant(time.time()-t0))
@@ -345,21 +350,23 @@ class ClassCapsules(BaseCaps):
         return ((batch_size, self.capsules), (batch_size, self.capsules, 4, 4))
 
 
-def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
+# def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
+def em_routing(in_act, votes, routings, log=False):
     t0=time.time()
     batch_size = tf.shape(votes)[0]
+    out_capsules = tf.shape(votes)[3]
     # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
     # initialize R matrix with 1/out_capsules
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
     # TODO: rewrite this?
-    rr = K.mean(K.ones_like(votes) / votes.shape[3], axis=-1, keepdims=True)
+    rr = K.mean(K.ones_like(votes) / out_capsules, axis=-1, keepdims=True)
 
     # beta_v shape: [batch_size, 1, 1, out_capsules, 1]
-    beta_v = K.reshape(beta_v, [1, 1, 1, votes.shape[3], 1])
+    beta_v = K.reshape(beta_v, [1, 1, 1, out_capsules, 1])
     beta_v = K.tile(beta_v, (batch_size, 1, 1, 1, 1))
 
     # beta_a shape: [batch_size, 1, 1, out_capsules]
-    beta_a = K.reshape(beta_a, [1, 1, 1, votes.shape[3]])
+    beta_a = K.reshape(beta_a, [1, 1, 1, out_capsules])
     beta_a = K.tile(beta_a, (batch_size, 1, 1, 1))
 
     for i in range(routings):
