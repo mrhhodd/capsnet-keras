@@ -356,7 +356,7 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     # initialize R matrix with 1/out_capsules
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
     # TODO: rewrite this?
-    rr = K.mean(K.ones_like(votes) / out_capsules, axis=-1, keepdims=True)
+    rr = K.mean(K.ones_like(votes) / tf.cast(out_capsules, tf.float32), axis=-1, keepdims=True)
 
     # beta_v shape: [batch_size, 1, 1, out_capsules, 1]
     beta_v = K.reshape(beta_v, [1, 1, 1, out_capsules, 1])
