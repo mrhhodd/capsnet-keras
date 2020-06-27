@@ -100,8 +100,7 @@ class CapsNet():
             K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = K.reshape(tf.boolean_mask(y_pred, 1 - y_true), shape=(-1, self.n_class - 1))
         a_t = K.reshape(tf.boolean_mask(y_pred, y_true), shape=(-1, 1))
-        # loss = K.square(K.maximum(0., margin - (a_t - a_i)))
-        loss = K.maximum(0., margin - (a_t - a_i))
+        loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
         return K.mean(K.sum(loss))
 
