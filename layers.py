@@ -24,31 +24,28 @@ class PrimaryCaps(layers.Layer):
         super(PrimaryCaps, self).__init__(**kwargs)
 
     def build(self, input_shape):
-        self.channels = input_shape[-1]
+        channels = input_shape[-1]
+        tf.print("channels", channels)
         self.pose_weights = self.add_weight(name='pose',
                                             shape=(self.kernel_size,
                                                    self.kernel_size,
-                                                   self.channels,
-                                                   self.capsules,
-                                                   4, 4),
-                                            initializer=paper_initializer,
+                                                   channels,
+                                                   self.capsules * 16),
+                                            initializer='glorot_uniform',
                                             trainable=True)
         self.act_weights = self.add_weight(name='act',
                                            shape=(self.kernel_size,
                                                   self.kernel_size,
-                                                  self.channels,
+                                                  channels,
                                                   self.capsules),
                                            initializer='glorot_uniform',
                                            trainable=True)
 
     def call(self, inputs):
-        tf.print("in_act primary caps shape", tf.shape(inputs[0]))
         batch_size = tf.shape(inputs)[0]
         spatial_size = int(inputs.shape[1])
 
-        pose_weights = K.reshape(
-            self.pose_weights, shape=(self.kernel_size, self.kernel_size, self.channels, self.capsules*16))
-        pose = K.conv2d(inputs, pose_weights, strides=(1, 1),
+        pose = K.conv2d(inputs, self.pose_weights, strides=(1, 1),
                         padding=self.padding, data_format='channels_last')
         out_pose = K.reshape(
             pose, shape=(batch_size, spatial_size, spatial_size, self.capsules, 16))
