@@ -86,8 +86,8 @@ class CapsNet():
         model = models.Model(inputs, fc_act, name='EM-CapsNet')
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
-                    #   loss=self.spread_loss,
-                      loss=losses.SquaredHinge(reduction="auto", name="squared_hinge"),
+                      loss=self.spread_loss,
+                    #   loss=losses.SquaredHinge(reduction="auto", name="squared_hinge"),
                       metrics=['accuracy', specificity])#, sensitivity, f1_score])
 
         print(model.layers)
