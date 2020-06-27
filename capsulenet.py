@@ -46,7 +46,7 @@ class CapsNet():
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
         # self.regularizer = regularizers.l2(0.0000002)
-        self.regularizer = regularizers.l2(0.0000004)
+        self.regularizer = regularizers.l2(0.000002)
 
         strategy = tf.distribute.MirroredStrategy()
         with strategy.scope():
