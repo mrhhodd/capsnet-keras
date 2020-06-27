@@ -17,10 +17,12 @@ def f1_score(y_true, y_pred):
     [tp, tn, fp, fn] = _analyse_data(y_true, y_pred)
     precision = tp / (tp + fp + EPSILON)
     recall = tp / (tp + fn + EPSILON)
-    return K.mean(2 * precision * recall / (precision + recall + EPSILON))
+    return K.mean(2.0 * precision * recall / (precision + recall + EPSILON))
 
 
 def _analyse_data(y_true, y_pred):
+    tf.print(y_pred, y_true)
+    tf.print(true_positive, true_negative, false_positive, false_negative)
     n_class = y_pred.shape[1]
     y_pred = K.one_hot(K.argmax(y_pred, axis=1), n_class)
     true_positive = K.sum(y_true * y_pred, axis=1)
