@@ -13,6 +13,7 @@ DATA_DIR = os.getenv('DATA_DIR')
 RESULTS_BASE_DIR = Path(os.getenv('RESULTS_BASE_DIR'))
 EPOCHS = int(os.getenv('EPOCHS'))
 BATCH_SIZE = int(os.getenv('BATCH_SIZE'))
+ROUTINGS = int(os.getenv('ROUTINGS'))
 LR = float(os.getenv('LR'), '3e-3')
 LR_DECAY = float(os.getenv('LR'), 0.96)
 
