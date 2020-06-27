@@ -57,8 +57,8 @@ class CapsNet():
         # smaller values for POCs
         A = 8
         B = 8
-        C = 12
-        D = 16
+        C = 8
+        D = 8
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
             # filters=A, kernel_size=5, strides=2,
@@ -111,11 +111,7 @@ class CapsNet():
         a_t = K.reshape(tf.boolean_mask(y_pred, y_true), shape=(-1, 1))
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
-        tf.print("###")
-        tf.print(y_true[0], y_pred[0])
-        tf.print(y_true[1], y_pred[1])
-        tf.print(K.mean(loss))
-        return K.mean(K.sum(loss))
+        return K.mean(loss)
 
 
 def train(network, data_gen, save_dir, epochs=30):
