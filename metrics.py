@@ -27,6 +27,6 @@ def _analyse_data(y_true, y_pred):
     true_negative = K.sum((1 - y_true) * (1 - y_pred), axis=1)
     false_positive = K.sum((1 - y_true) * y_pred, axis=1)
     false_negative = K.sum(y_true * (1 - y_pred), axis=1)
-    tf.print(y_pred, y_true)
-    tf.print(true_positive, true_negative, false_positive, false_negative)
+    # tf.print(y_pred, y_true)
+    # tf.print(true_positive, true_negative, false_positive, false_negative)
     return true_positive, true_negative, false_positive, false_negative

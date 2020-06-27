@@ -110,6 +110,8 @@ class CapsNet():
         a_t = K.reshape(tf.boolean_mask(y_pred, y_true), shape=(-1, 1))
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
+        tf.print(K.sum(loss))
+        tf.print(K.mean(K.sum(loss)))
         return K.mean(K.sum(loss))
 
 
