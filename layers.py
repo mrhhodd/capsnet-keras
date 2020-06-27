@@ -11,7 +11,7 @@ def paper_initializer(shape, dtype):
         This new method is more scale able and easier to train. 
     """
     # assert shape_dims >= 2
-    assert shape[-1] == shape[-2], "last two value has to be an nxn matrix"
+    assert shape[-1] == shape[-2], "last two value has to be an NxN matrix"
     return initializers.Identity()(shape=shape[-2:], dtype=dtype) + initializers.RandomUniform(minval=-0.03, maxval=0.03)(shape=shape, dtype=dtype)
 
 
@@ -24,50 +24,43 @@ class PrimaryCaps(layers.Layer):
         super(PrimaryCaps, self).__init__(**kwargs)
 
     def build(self, input_shape):
+        channels = input_shape[-1]
+        tf.print("channels", channels)
         self.pose_weights = self.add_weight(name='pose',
                                             shape=(self.kernel_size,
                                                    self.kernel_size,
-                                                   input_shape[-1],
-                                                   self.capsules * 16),
-                                            initializer='glorot_uniform',
+                                                   channels,
+                                                   self.capsules,
+                                                   4, 4),
+                                            initializer=paper_initializer,
                                             trainable=True)
         self.act_weights = self.add_weight(name='act',
                                            shape=(self.kernel_size,
                                                   self.kernel_size,
-                                                  input_shape[-1],
+                                                  channels,
                                                   self.capsules),
                                            initializer='glorot_uniform',
                                            trainable=True)
 
     def call(self, inputs):
-        # tf.print("####")
-        # tf.print(tf.reduce_max(inputs))
-        # tf.print(tf.reduce_mean(inputs))
-        # tf.print(tf.reduce_min(inputs))
-        # tf.print("####")
-        # # tf.print("in_act primary caps", inputs[0])
-        # # tf.print("in_act primary caps", inputs[0])
-        t0 = time.time()
+        tf.print("in_act primary caps shape", tf.shape(inputs[0]))
         batch_size = tf.shape(inputs)[0]
         spatial_size = int(inputs.shape[1])
 
+        out_pose = K.reshape(
+            pose, shape=(batch_size, spatial_size, spatial_size, self.capsules*16))
         pose = K.conv2d(inputs, self.pose_weights, strides=(1, 1),
                         padding=self.padding, data_format='channels_last')
-        pose = K.reshape(
+        out_pose = K.reshape(
             pose, shape=(batch_size, spatial_size, spatial_size, self.capsules, 16))
 
         act = K.conv2d(inputs, self.act_weights, strides=(1, 1),
                        padding=self.padding, data_format='channels_last')
-        # # tf.print("out_act2 primary caps", act[0])
         act = activations.sigmoid(act)
-        # # tf.print("out_act1 primary caps", act[0])
-        act = K.reshape(
+        out_act = K.reshape(
             act, shape=(batch_size, spatial_size, spatial_size, self.capsules, 1))
 
-        # # tf.print("out_act primary caps", act[0])
-
-        # # print("\n TIME", self.name, tf.constant(time.time()-t0))
-        return act, pose
+        return out_act, out_pose
 
     def compute_output_shape(self, input_shape):
         spatial_shape = (None, input_shape[1], input_shape[2])
@@ -291,7 +284,7 @@ class ClassCapsules(BaseCaps):
         # Reshape the votes for the routing purposes
         # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
         votes = tf.matmul(in_pose_tiled, weights_tiled)
-        # votes = self._coord_addition(votes)
+        votes = self._coord_addition(votes)
         votes = K.reshape(votes, (batch_size, 1, self.spatial_size_in **
                                   2 * self.in_capsules, self.capsules, 16))
 

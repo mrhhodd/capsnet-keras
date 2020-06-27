@@ -11,7 +11,7 @@
 #SBATCH --time=04:00:00 
 ## Nazwa grantu do rozliczenia zużycia zasobów
 #SBATCH -A plgcapsnet
-#SBATCH --partition=plgrid-v100
+#SBATCH --partition=plgrid-gpu-v100
 #SBATCH --gres=gpu:8
 
 
