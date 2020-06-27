@@ -45,7 +45,8 @@ class CapsNet():
         self.lr_decay = lr_decay
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
-        self.regularizer = regularizers.l2(0.0000002)
+        # self.regularizer = regularizers.l2(0.0000002)
+        self.regularizer = regularizers.l2(0.0000004)
         self.model = self._create_model()
 
     def _create_model(self):
