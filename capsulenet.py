@@ -55,14 +55,14 @@ class CapsNet():
     def _create_model(self):
         # A = B = C = D = 32
         # smaller values for POCs
-        A = 8
-        B = 8
-        C = 8
-        D = 8
+        A = 16
+        B = 16
+        C = 16
+        D = 16
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
             # filters=A, kernel_size=5, strides=2,
-            filters=A, kernel_size=9, strides=3,
+            filters=A, kernel_size=7, strides=2,
             padding='same', activation='relu',
             name='conv1')(inputs)
         [pc_act, pc_pose] = PrimaryCaps(
@@ -98,8 +98,8 @@ class CapsNet():
 
         m_min = 0.2
         m_delta = 0.79
-        # p = 50000.0 * 64.0 / self.batch_size
-        p = 10000.0 * 64.0 / self.batch_size
+        p = 50000.0 * 64.0 / self.batch_size
+        # p = 10000.0 * 64.0 / self.batch_size
         margin = m_min + m_delta * \
             K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = K.reshape(tf.boolean_mask(y_pred, 1 - y_true), shape=(-1, self.n_class - 1))
