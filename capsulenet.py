@@ -112,7 +112,7 @@ class CapsNet():
         self.global_step.assign(self.global_step + 1)
         tf.print("###")
         tf.print(K.sum(loss))
-        tf.print(K.mean(K.sum(loss)))
+        tf.print(K.mean(loss))
         return K.mean(K.sum(loss))
 
 
