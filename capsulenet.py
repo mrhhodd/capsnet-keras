@@ -46,7 +46,7 @@ class CapsNet():
         # "We use a weight decay loss with a small factor of .0000002 rather than the reconstruction loss.
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
         # self.regularizer = regularizers.l2(0.0000002)
-        self.regularizer = regularizers.l2(0.000002)
+        self.regularizer = regularizers.l2(0.0000002)
 
         strategy = tf.distribute.MirroredStrategy()
         with strategy.scope():
@@ -55,14 +55,14 @@ class CapsNet():
     def _create_model(self):
         # A = B = C = D = 32
         # smaller values for POCs
-        A = 16
-        B = 16
+        A = 8
+        B = 8
         C = 8
         D = 8
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
             # filters=A, kernel_size=5, strides=2,
-            filters=A, kernel_size=7, strides=2,
+            filters=A, kernel_size=9, strides=3,
             padding='same', activation='relu',
             name='conv1')(inputs)
         [pc_act, pc_pose] = PrimaryCaps(
