@@ -22,13 +22,13 @@ def f1_score(y_true, y_pred):
 
 def _analyse_data(y_true, y_pred):
     tf.print(y_pred, y_true)
-    tf.print(true_positive, true_negative, false_positive, false_negative)
     n_class = y_pred.shape[1]
     y_pred = K.one_hot(K.argmax(y_pred, axis=1), n_class)
     true_positive = K.sum(y_true * y_pred, axis=1)
     true_negative = K.sum((1 - y_true) * (1 - y_pred), axis=1)
     false_positive = K.sum((1 - y_true) * y_pred, axis=1)
     false_negative = K.sum(y_true * (1 - y_pred), axis=1)
+    tf.print(true_positive, true_negative, false_positive, false_negative)
     # tf.print(y_pred, y_true)
     # tf.print(true_positive, true_negative, false_positive, false_negative)
     return true_positive, true_negative, false_positive, false_negative
