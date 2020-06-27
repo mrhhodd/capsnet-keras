@@ -46,9 +46,9 @@ class PrimaryCaps(layers.Layer):
         batch_size = tf.shape(inputs)[0]
         spatial_size = int(inputs.shape[1])
 
-        self.pose_weights = K.reshape(
+        pose_weights = K.reshape(
             self.pose_weights, shape=(self.kernel_size, self.kernel_size, self.channels, self.capsules*16))
-        pose = K.conv2d(inputs, self.pose_weights, strides=(1, 1),
+        pose = K.conv2d(inputs, pose_weights, strides=(1, 1),
                         padding=self.padding, data_format='channels_last')
         out_pose = K.reshape(
             pose, shape=(batch_size, spatial_size, spatial_size, self.capsules, 16))
