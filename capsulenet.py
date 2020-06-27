@@ -47,7 +47,10 @@ class CapsNet():
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
         # self.regularizer = regularizers.l2(0.0000002)
         self.regularizer = regularizers.l2(0.0000004)
-        self.model = self._create_model()
+
+        strategy = tf.distribute.MirroredStrategy()
+        with strategy.scope():
+            self.model = self._create_model()
 
     def _create_model(self):
         # A = B = C = D = 32
