@@ -14,15 +14,15 @@ RESULTS_BASE_DIR = Path(os.getenv('RESULTS_BASE_DIR'))
 EPOCHS = int(os.getenv('EPOCHS'))
 BATCH_SIZE = int(os.getenv('BATCH_SIZE'))
 ROUTINGS = int(os.getenv('ROUTINGS'))
-LR = float(os.getenv('LR'), '3e-3')
-LR_DECAY = float(os.getenv('LR'), 0.96)
+LR = float(os.getenv('LR', 0.003))
+LR_DECAY = float(os.getenv('LR_DECAY', 0.96))
 
 
 if __name__ == "__main__":
     cn = CapsNet(
         n_class=4, 
         input_shape=INPUT_SHAPE, 
-        batch_size=BATCH_SIZE,
+        batch_size=BATCH_SIZE
         routings=ROUTINGS,
         lr=LR,
         lr_decay=LR_DECAY
