@@ -47,7 +47,7 @@ class PrimaryCaps(layers.Layer):
         spatial_size = int(inputs.shape[1])
 
         self.pose_weights = K.reshape(
-            self.pose_weights, shape=(self.kernel_size, self.kernel_size, self.channels, self.capsules))
+            self.pose_weights, shape=(self.kernel_size, self.kernel_size, self.channels, self.capsules*16))
         pose = K.conv2d(inputs, self.pose_weights, strides=(1, 1),
                         padding=self.padding, data_format='channels_last')
         out_pose = K.reshape(
