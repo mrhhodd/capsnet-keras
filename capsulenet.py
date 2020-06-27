@@ -111,7 +111,7 @@ class CapsNet():
         a_t = K.reshape(tf.boolean_mask(y_pred, y_true), shape=(-1, 1))
         loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
-        return K.mean(K.sum(loss, axis=1, keep_dims=true))
+        return K.mean(K.sum(loss, axis=1, keep_dims=True))
 
 
 def train(network, data_gen, save_dir, epochs=30):
