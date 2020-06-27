@@ -22,7 +22,7 @@ if __name__ == "__main__":
     cn = CapsNet(
         n_class=4, 
         input_shape=INPUT_SHAPE, 
-        batch_size=BATCH_SIZE
+        batch_size=BATCH_SIZE,
         routings=ROUTINGS,
         lr=LR,
         lr_decay=LR_DECAY
