@@ -5,6 +5,8 @@ EPSILON = K.epsilon()
 
 def specificity(y_true, y_pred):
     [_, tn, fp, _] = _analyse_data(y_true, y_pred)
+    print(tn, fp)
+    print(y_pred, y_true)
     return K.mean(tn / (tn + fp + EPSILON))
 
 
