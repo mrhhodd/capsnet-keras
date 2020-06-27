@@ -25,7 +25,6 @@ class PrimaryCaps(layers.Layer):
 
     def build(self, input_shape):
         channels = input_shape[-1]
-        tf.print("channels", channels)
         self.pose_weights = self.add_weight(name='pose',
                                             shape=(self.kernel_size,
                                                    self.kernel_size,
