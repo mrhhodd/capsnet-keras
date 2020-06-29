@@ -55,10 +55,10 @@ class CapsNet():
     def _create_model(self):
         # A = B = C = D = 32
         # smaller values for POCs
-        A = 8
-        B = 8
-        C = 8
-        D = 8
+        A = 16
+        B = 16
+        C = 16
+        D = 16
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
             # filters=A, kernel_size=5, strides=2,
@@ -72,14 +72,15 @@ class CapsNet():
             capsules=C, kernel_size=3, strides=2, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_1')([pc_act, pc_pose])
-        [cc1a_act, cc1a_pose] = ConvCaps(
-            capsules=C, kernel_size=3, strides=2, padding='valid',
-            routings=self.routings, weights_reg=self.regularizer,
-            name='conv_caps_1a')([cc1_act, cc1_pose])
+        # [cc1a_act, cc1a_pose] = ConvCaps(
+        #     capsules=C, kernel_size=3, strides=2, padding='valid',
+        #     routings=self.routings, weights_reg=self.regularizer,
+        #     name='conv_caps_1a')([cc1_act, cc1_pose])
         [cc2_act, cc2_pose] = ConvCaps(
             capsules=D, kernel_size=3, strides=1, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
-            name='conv_caps_2')([cc1a_act, cc1a_pose])
+            # name='conv_caps_2')([cc1a_act, cc1a_pose])
+            name='conv_caps_2')([cc1_act, cc1_pose])
         [fc_act, fc_pose] = ClassCapsules(
             capsules=self.n_class, routings=self.routings, weights_reg=self.regularizer,
             name='class_caps')([cc2_act, cc2_pose])

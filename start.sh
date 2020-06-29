@@ -21,10 +21,10 @@ module add plgrid/libs/tensorflow-gpu/2.2.0-python-3.8
 
 SHAPE=128 \
 DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/2 \
-RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/OCT2017_128x128_SBB/LR_TEST_$LR/ \
+RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/OCT2017_128x128_SBB/16caps/ \
 EPOCHS=20 \
 BATCH_SIZE=96 \
 ROUTINGS=3 \
-LR=0.003 \
-LR_DECAY=0.96 \
+LR=0.04 \
+LR_DECAY=0.98 \
 python3 /net/people/plgmwnetrzak/magisterka/capsnet-keras/main.py
