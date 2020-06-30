@@ -21,7 +21,7 @@ module add plgrid/libs/tensorflow-gpu/2.2.0-python-3.8
 
 SHAPE=128 \
 DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/2 \
-RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/OCT2017_128x128_SBB/16caps/ \
+RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/OCT2017_128x128_SBB/32caps/ \
 EPOCHS=20 \
 BATCH_SIZE=96 \
 ROUTINGS=3 \

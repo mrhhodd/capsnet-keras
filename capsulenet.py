@@ -61,8 +61,8 @@ class CapsNet():
         D = 32
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
-            filters=A, kernel_size=5, strides=2,
-            # filters=A, kernel_size=9, strides=3,
+            # filters=A, kernel_size=5, strides=2,
+            filters=A, kernel_size=9, strides=3,
             padding='same', activation='relu',
             name='conv1')(inputs)
         [pc_act, pc_pose] = PrimaryCaps(
