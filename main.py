@@ -34,7 +34,8 @@ if __name__ == "__main__":
         target_size=(SHAPE, SHAPE), 
         validation_split=0.2
         )
-    cn_log_dir = RESULTS_BASE_DIR/cn.model.name/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_epochs_{EPOCHS}"
+    # cn_log_dir = RESULTS_BASE_DIR/cn.model.name/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_epochs_{EPOCHS}"
+    cn_log_dir = RESULTS_BASE_DIR/cn.model.name
     train(
         network=cn, 
         data_gen=data_gen, 

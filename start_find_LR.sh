@@ -19,11 +19,11 @@ export LD_LIBRARY_PATH=/net/people/plgmwnetrzak/magisterka/cuda/lib64:$LD_LIBRAR
 export PYTHONPATH=/net/people/plgmwnetrzak/magisterka/capsnet-keras:$PYTHONPATH 
 module add plgrid/libs/tensorflow-gpu/2.2.0-python-3.8 
 
-for LR in 1 0.5 0.1 0.05 0.01 0.005 0.001 0.0005 0.0001 0.00005 0.00001
+for LR in 0.1 0.06 0.05 0.04 0.03 0.01 0.005 0.001
 do
     SHAPE=128 \
-    DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/2 \
-    RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/OCT2017_128x128_SBB/LR_TEST_$LR/ \
-    EPOCHS=20 BATCH_SIZE=96 ROUTINGS=3 LR=$LR LR_DECAY=0.96 \
+    DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/3 \
+    RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/OCT2017_128x128_SBB/LR_TEST2_$LR/ \
+    EPOCHS=20 BATCH_SIZE=96 ROUTINGS=3 LR=$LR LR_DECAY=0.97 \
     python3 /net/people/plgmwnetrzak/magisterka/capsnet-keras/main.py
 done
