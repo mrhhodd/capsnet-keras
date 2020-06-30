@@ -6,9 +6,9 @@
 ## Liczba zadań per węzeł (domyślnie jest to liczba alokowanych rdzeni na węźle)
 #SBATCH --ntasks-per-node=24
 ## Ilość pamięci przypadającej na jeden rdzeń obliczeniowy (domyślnie 5GB na rdzeń)
-#SBATCH --mem-per-cpu=5GB
+#SBATCH --mem-per-cpu=1GB
 ## Maksymalny czas trwania zlecenia (format HH:MM:SS)
-#SBATCH --time=04:00:00 
+#SBATCH --time=12:00:00 
 ## Nazwa grantu do rozliczenia zużycia zasobów
 #SBATCH -A plgcapsnet
 #SBATCH --partition=plgrid-gpu-v100
@@ -23,7 +23,7 @@ SHAPE=128 \
 DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/2 \
 RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/OCT2017_128x128_SBB/32caps/ \
 EPOCHS=20 \
-BATCH_SIZE=96 \
+BATCH_SIZE=48 \
 ROUTINGS=3 \
 LR=0.04 \
 LR_DECAY=0.98 \
