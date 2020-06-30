@@ -1,10 +1,11 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from pathlib import Path
+import numpy as np
 
 class DataGen():
     def __init__(self, batch_size, data_dir, target_size, validation_split):
         data_gen = ImageDataGenerator(
-            preprocessing_function=lambda input: (input - 127.0)/128.0,
+            preprocessing_function=lambda input: (input - np.mean(input))/np.var(input),
             validation_split=validation_split
         )
         self.training_generator = data_gen.flow_from_directory(
