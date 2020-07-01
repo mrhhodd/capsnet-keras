@@ -16,6 +16,7 @@ BATCH_SIZE = int(os.getenv('BATCH_SIZE'))
 ROUTINGS = int(os.getenv('ROUTINGS'))
 LR = float(os.getenv('LR', 0.003))
 LR_DECAY = float(os.getenv('LR_DECAY', 0.96))
+RR = float(os.getenv('RR', 0.0000002))
 
 
 if __name__ == "__main__":
@@ -25,7 +26,8 @@ if __name__ == "__main__":
         batch_size=BATCH_SIZE,
         routings=ROUTINGS,
         lr=LR,
-        lr_decay=LR_DECAY
+        lr_decay=LR_DECAY,
+        regularization_rate=RR
         )
 
     data_gen = DataGen(
@@ -34,8 +36,7 @@ if __name__ == "__main__":
         target_size=(SHAPE, SHAPE), 
         validation_split=0.2
         )
-    # cn_log_dir = RESULTS_BASE_DIR/cn.model.name/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_epochs_{EPOCHS}"
-    cn_log_dir = RESULTS_BASE_DIR/cn.model.name
+    cn_log_dir = RESULTS_BASE_DIR/cn.model.name/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_epochs_{EPOCHS}"
     train(
         network=cn, 
         data_gen=data_gen, 
