@@ -5,7 +5,7 @@ import numpy as np
 class DataGen():
     def __init__(self, batch_size, data_dir, target_size, validation_split):
         data_gen = ImageDataGenerator(
-            preprocessing_function=lambda input: (input - np.mean(input))/np.var(input),
+            preprocessing_function=lambda input: (input - np.mean(input))/(1e-9 + np.var(input)),
             validation_split=validation_split
         )
         self.training_generator = data_gen.flow_from_directory(
