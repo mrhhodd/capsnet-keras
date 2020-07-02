@@ -92,7 +92,6 @@ class BaseCaps(layers.Layer):
             name='beta_a',
             shape=[self.capsules],
             # initializer='glorot_uniform',
-            # initializer=initializers.TruncatedNormal(mean=-4000.0, stddev=1750.0),
             initializer=initializers.TruncatedNormal(mean=-1000.0, stddev=500.0),
             # regularizer=self.weights_regularizer,
             trainable=True
@@ -118,7 +117,6 @@ class BaseCaps(layers.Layer):
 
 class ConvCaps(BaseCaps):
     def __init__(self, capsules, strides, padding, kernel_size, routings, **kwargs):
-        # TODO: Allow for different height/width
         self.strides = strides
         self.padding = padding
         self.kernel_size = kernel_size
@@ -150,10 +148,8 @@ class ConvCaps(BaseCaps):
 
     def call(self, inputs):
         super(ConvCaps, self).call(inputs)
-        t0 = time.time()
         [in_act, in_pose] = inputs
         batch_size = tf.shape(in_act)[0]
-        # # tf.print("in_act conv caps", in_act[0])
 
         # flatten 2D capsule array to 1D vector
         # in_act_shape: [batch_size, height*width, in_capsules, 1]
@@ -181,20 +177,17 @@ class ConvCaps(BaseCaps):
             batch_size, self.spatial_size_out ** 2, self.kernel_size ** 2 * self.in_capsules, 1, 4, 4])
         in_act_tiled = K.tile(in_act_tiled, [1, 1, 1, self.capsules, 1])
         in_pose_tiled = K.tile(in_pose_tiled, [1, 1, 1, self.capsules, 1, 1])
-        # # tf.print("in_act_tiled 1 conv caps", in_act_tiled[0])
 
         # replicate the weights for each of the output spatial capsule
         # weights_tiled shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 4, 4]
         weights_tiled = K.tile(self.transformation_weights, [
                                batch_size, self.spatial_size_out ** 2, 1, 1, 1, 1])
-        # # tf.print("weights_tiled 1 conv caps", weights_tiled[0])
 
         # Compute all votes and reshape them for the routing purposes
         # votes shape: [batch_size, out_height*out_width, in_capsules*kernel_size^2, out_capsules, 16]
         votes = tf.matmul(in_pose_tiled, weights_tiled)
         votes = K.reshape(votes, (batch_size, self.spatial_size_out ** 2,
                                   self.kernel_size ** 2 * self.in_capsules, self.capsules, 16))
-        # # tf.print("votes 1 conv caps", votes[0])
 
         # run routing to compute output activation and pose
         # out_act shape: [batch_size, out_height, out_width, out_capsules, 1]
@@ -205,8 +198,6 @@ class ConvCaps(BaseCaps):
             out_act, [batch_size, self.spatial_size_out, self.spatial_size_out, self.capsules, 1])
         out_pose = K.reshape(
             out_pose, [batch_size, self.spatial_size_out, self.spatial_size_out, self.capsules, 4, 4])
-        # # tf.print("out_act conv caps", out_act[0])
-        # # print("\n TIME", self.name, tf.constant(time.time()-t0))
         return out_act, out_pose
 
     def compute_output_shape(self, input_shape):
@@ -218,8 +209,6 @@ class ConvCaps(BaseCaps):
 
 class ClassCapsules(BaseCaps):
     # basically a fully connected layer?
-    # def __init__(self, **kwargs):
-    #     super(ClassCapsules, self).__init__(**kwargs)
 
     def build(self, input_shape):
         super(ClassCapsules, self).build(input_shape)
@@ -241,10 +230,8 @@ class ClassCapsules(BaseCaps):
 
     def call(self, inputs):
         super(ClassCapsules, self).call(inputs)
-        t0=time.time()
         [in_act, in_pose] = inputs
         batch_size = tf.shape(in_act)[0]
-        # # tf.print("IN_ACT capsule_caps", in_act[0])
         # flatten 2D capsule array to 1D vector
         # in_act_shape: [batch_size, height*width, in_capsules, 1]
         # in_pose_shape: [batch_size, height*width, in_capsules, 4, 4]
@@ -287,12 +274,10 @@ class ClassCapsules(BaseCaps):
         # reshape output activation and pose
         # out_act shape: [batch_size, out_capsules, 1]
         # out_pose shape: [batch_size, out_capsules, 4, 4]
-        # tf.print("IN_ACT return", in_act_tiled)
         out_act, out_pose = self.routing_method(
             in_act_tiled, votes, self.beta_a, self.beta_v, self.routings, log=True)
         out_act = K.reshape(out_act, [batch_size, self.capsules])
         out_pose = K.reshape(out_pose, [batch_size, self.capsules, 4, 4])
-        # # print("\n TIME", self.name, tf.constant(time.time()-t0))
         return out_act, out_pose
 
     def _coord_addition(self, votes):
@@ -343,7 +328,6 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
     # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
     # initialize R matrix with 1/out_capsules
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
-    # TODO: rewrite this?
     rr = K.mean(K.ones_like(votes) / tf.cast(out_capsules, tf.float32), axis=-1, keepdims=True)
 
     # beta_v shape: [batch_size, 1, 1, out_capsules, 1]
@@ -359,27 +343,16 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
         lambd = 0.01 * (1 - tf.pow(0.95, tf.cast(i + 1, tf.float32)))
 
         # compute output activations, means and standard deviations
-        # out_act shape
-        # means shape
-        # std_devs shape
         t1=time.time()
         out_act, means, std_devs = _routing_m_step(
             in_act, rr, votes, lambd, beta_a, beta_v)
-        # print("\n TIME", " m_step routing", time.time()-t1)
 
         # Skip the e_step for last iterations - no point in running it
         if i < routings - 1:
             # readjust the rr values for the next step
-            t1=time.time()
             rr = _routing_e_step(means, std_devs, out_act, votes)
-            # # print("\n TIME", " e_step routing", time.time()-t1)
 
     # return out_act and means for parent capsule poses
-    # # print("\n TIME", "routing", tf.constant(time.time()-t0))
-    # tf.print("##### end of routing")
-    # tf.print("mean:", tf.reduce_mean(out_act),"max:", tf.reduce_max(out_act),"min:", tf.reduce_min(out_act))
-    # tf.print(out_act[0][0][0])
-
     return out_act, means
 
 
@@ -388,13 +361,9 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     t1=time.time()
 
     rr_scaled = tf.multiply(rr, in_act)
-    # tf.print("_routing_m_step in_act caps", in_act[0])
-    # tf.print("_routing_m_step rr caps", rr[0])
-    # print("\n TIME", "0 m_step routing", time.time()-t1);t1=time.time()
     # replicate it for each pose value
     # rr_tiled shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules,16]
     rr_tiled = K.tile(rr_scaled, [1, 1, 1, 1, 16])
-    # print("\n TIME", "1 m_step routing", time.time()-t1);t1=time.time()
 
     # calculate normalization factor - so that beta values are always relevant
     child_caps = float(tf.shape(rr_tiled)[2])
@@ -404,49 +373,34 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # Compute the sum of all input capsules in rr matrix
     # rr_sum shape: [batch_size, 1, 1, out_capsules, 16]
     rr_sum = tf.reduce_sum(rr_tiled, axis=2, keepdims=True)
-    # print("\n TIME", "2 m_step routing", time.time()-t1);t1=time.time()
 
     # M_step 3 - compute means for each parent capsule
     # means shape: [batch_size, 1, 1, out_capsules, 16]
     means = tf.reduce_sum(tf.multiply(rr_tiled, votes), axis=2,
                           keepdims=True) / (rr_sum + K.epsilon())
-    # print("\n TIME", "3 m_step routing", time.time()-t1);t1=time.time()
 
     # M_step 4 - compute std_dev for each parent capsule
     # std_dev shape: [batch_size, 1, 1, out_capsules, 16]
+    # sqrt causing some NaNs? use variance instead
     std_dev =  tf.reduce_sum(tf.multiply(rr_tiled, tf.square(votes - means)), axis=2,
                       keepdims=True) / (rr_sum + K.epsilon())
     # std_dev = tf.sqrt(
     #     tf.reduce_sum(tf.multiply(rr_tiled, tf.square(votes - means)), axis=2,
     #                   keepdims=True) / (rr_sum + K.epsilon())
     # )
-    # print("\n TIME", "4 m_step routing", time.time()-t1);t1=time.time()
 
     # M_step 5 - compute costs for each parent capsule
     # beta_v shape: [batch_size, 1, 1, 1, out_capsules, 1]
     # costs shape: [batch_size, 1, 1, out_capsules, 16]
     # costs = beta_v + tf.multiply(0.5 * K.log(std_dev + K.epsilon()), rr_sum * norm_factor)
     costs = tf.multiply(beta_v + 0.5 * K.log(std_dev + K.epsilon()), rr_sum * norm_factor)
-    # print("\n TIME", "5 m_step routing", time.time()-t1);t1=time.time()
 
     # M_step 6 - compute activation for each parent capsule
     # beta_a shape: [batch_size, 1, 1, out_capsules]
     # out_act shape: [batch_size, out_height*out_width, 1, out_capsules, 1]
-    # TODO: Do we need normalization here?
-    # tf.print("_routing_m_step costs ", costs[0])
-    # tf.print("#MROUTINAG")
-    # tf.print(costs[0][0][0])
     out_act = K.sigmoid(lambd * (beta_a - tf.reduce_sum(costs, axis=-1)))
-    # tf.print(out_act[0][0][0])
-    # tf.print("_routing_m_step out_act ", out_act[0])
-    # tf.print("_routing_m_step beta_a ", beta_a[0])
-    # print("\n TIME", "6 m_step routing", time.time()-t1);t1=time.time()
 
     out_act = K.expand_dims(out_act, -1)
-    # tf.print("_routing_m_step out_act 2", out_act[0])
-    # # tf.print("_routing_m_step means", means[0])
-    # # tf.print("_routing_m_step std_dev", std_dev[0])
-    # print("\n TIME", "7 m_step routing", time.time()-t1);t1=time.time()
 
     return out_act, means, std_dev
 
@@ -466,13 +420,5 @@ def _routing_e_step(means, std_dev, out_act, votes):
     # E_step 3 - recompute the R matrix values
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
     zz = K.log(out_act + K.epsilon()) + prob
-    # tf.print("#####")
-    # tf.print("zz shape", tf.shape(zz))
-    # tf.print("zz", zz[0][0][0])
-    # # tf.print("BEFORE SOFTMAX:", zz)
     rr = K.softmax(zz, axis=3)
-    # # tf.print("AFTER SOFTMAX:", zz)
-    # tf.print("#####")
-    # tf.print("rr shape",tf.shape(rr))
-    # tf.print("rr", rr[0][0][0])
     return rr

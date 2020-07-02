@@ -7,9 +7,7 @@ from layers import PrimaryCaps, ConvCaps, ClassCapsules
 from metrics import specificity, sensitivity, f1_score
 K.set_image_data_format('channels_last')
 
-# TODO: Data generators have some issues - need to investigate this
 # TODO: How to test? divide data into 10 data sets, then run K-fold validation for different validation splits?
-# TODO: Do we need normalization in the m_step?
 # TODO: Analyze the problems that Gritzman mentions!
 # TODO: tests with data augmentation?
 
@@ -17,7 +15,6 @@ K.set_image_data_format('channels_last')
 # TODO: move spread loss outisde
 # TODO: tensorflow vs tensorflow.keras.backend??
 # TODO: switch from direct tensorflow to keras.backend?
-# TODO: ask about the logarithms
 # TODO: docstrings?
 # TODO: mypy
 # TODO: all shapes in tuples
@@ -48,18 +45,17 @@ class CapsNet():
         # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
         self.regularizer = regularizers.l2(regularization_rate)
 
-        # strategy = tf.distribute.MirroredStrategy()
-        # with strategy.scope():
-        #     self.model = self._create_model()
-        self.model = self._create_model()
+        strategy = tf.distribute.MirroredStrategy()
+        with strategy.scope():
+            self.model = self._create_model()
 
     def _create_model(self):
         # A = B = C = D = 32
         # smaller values for POCs
-        A = 8
-        B = 8
-        C = 8
-        D = 8
+        A = 16
+        B = 16
+        C = 16
+        D = 16
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
             # filters=A, kernel_size=5, strides=2,
@@ -89,7 +85,6 @@ class CapsNet():
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
                       loss=self.spread_loss,
-                    #   loss=losses.SquaredHinge(reduction="auto", name="squared_hinge"),
                       metrics=['accuracy', specificity])#, sensitivity, f1_score])
 
         print(model.layers)
@@ -106,7 +101,6 @@ class CapsNet():
         m_min = 0.2
         m_delta = 0.79
         p = 50000.0 * 64.0 / self.batch_size
-        # p = 10000.0 * 64.0 / self.batch_size
         margin = m_min + m_delta * \
             K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = K.reshape(tf.boolean_mask(y_pred, 1 - y_true), shape=(-1, self.n_class - 1))
