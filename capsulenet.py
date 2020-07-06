@@ -52,7 +52,7 @@ class CapsNet():
     def _create_model(self):
         # A = B = C = D = 32
         # smaller values for POCs
-        A = 32
+        A = 64
         B = 8
         C = 16
         D = 16
