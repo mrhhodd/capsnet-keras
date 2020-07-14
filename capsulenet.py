@@ -58,7 +58,7 @@ class CapsNet():
         # smaller values for POCs
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
-            filters=self.A, kernel_size=9, strides=2,
+            filters=self.A, kernel_size=9, strides=3,
             # filters=A, kernel_size=9, strides=3,
             padding='same', activation='relu',
             name='conv1')(inputs)
