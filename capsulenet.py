@@ -26,7 +26,7 @@ K.set_image_data_format('channels_last')
 
 
 class CapsNet():
-    def __init__(self,A=64, B=8, C=16, D=16,
+    def __init__(self,A=64, B=8, C=16, D=16, cc2_strides=1,
                  input_shape=[32, 32, 1],
                  batch_size=64,
                  lr=3e-3,
@@ -38,6 +38,7 @@ class CapsNet():
         self.B = B
         self.C = C
         self.D = D
+        self.cc2_strides = cc2_strides
         self.input_shape = input_shape
         self.batch_size = batch_size
         self.n_class = n_class
