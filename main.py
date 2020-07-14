@@ -17,10 +17,16 @@ ROUTINGS = int(os.getenv('ROUTINGS'))
 LR = float(os.getenv('LR', 0.003))
 LR_DECAY = float(os.getenv('LR_DECAY', 0.96))
 RR = float(os.getenv('RR', 0.0000002))
-
+REG_RATE = 0.000002
+A = int(os.getenv('A', 64))
+B = int(os.getenv('B', 8))
+C = int(os.getenv('C', 16))
+D = int(os.getenv('D', 16))
+cckernel = int(os.getenv('cckernel', 5))
 
 if __name__ == "__main__":
     cn = CapsNet(
+        A=A,B=B,C=C,D=D,cckernel=cckernel,
         n_class=4, 
         input_shape=INPUT_SHAPE, 
         batch_size=BATCH_SIZE,
