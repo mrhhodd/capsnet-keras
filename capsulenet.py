@@ -58,7 +58,7 @@ class CapsNet():
         # smaller values for POCs
         inputs = layers.Input(shape=self.input_shape)
         conv = layers.Conv2D(
-            filters=self.A, kernel_size=9, strides=3,
+            filters=self.A, kernel_size=9, strides=2,
             # filters=A, kernel_size=9, strides=3,
             padding='same', activation='relu',
             name='conv1')(inputs)
@@ -66,11 +66,11 @@ class CapsNet():
             capsules=self.B, kernel_size=1, strides=1, padding='valid',
             name='primCaps')(conv)
         [cc1_act, cc1_pose] = ConvCaps(
-            capsules=self.C, kernel_size=3, strides=2, padding='valid',
+            capsules=self.C, kernel_size=5, strides=2, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_1')([pc_act, pc_pose])
         [cc2_act, cc2_pose] = ConvCaps(
-            capsules=self.D, kernel_size=3, strides=1, padding='valid',
+            capsules=self.D, kernel_size=5, strides=2, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_2')([cc1_act, cc1_pose])
         [fc_act, fc_pose] = ClassCapsules(
