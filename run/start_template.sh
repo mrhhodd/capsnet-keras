@@ -12,7 +12,7 @@
 ## Nazwa grantu do rozliczenia zużycia zasobów
 #SBATCH -A plgcapsnet
 #SBATCH --partition=plgrid-gpu-v100
-#SBATCH --gres=gpu:6
+#SBATCH --gres=gpu:4
 
 
 export LD_LIBRARY_PATH=/net/people/plgmwnetrzak/magisterka/cuda/lib64:$LD_LIBRARY_PATH 
@@ -22,7 +22,7 @@ module add plgrid/libs/tensorflow-gpu/2.2.0-python-3.8
 SHAPE=128 \
 DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/2 \
 EPOCHS=30 \
-BATCH_SIZE=96 \
+BATCH_SIZE=16 \
 ROUTINGS=3 \
 LR=0.04 \
 LR_DECAY=0.97 \
