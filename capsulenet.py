@@ -70,7 +70,7 @@ class CapsNet():
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_1')([pc_act, pc_pose])
         [cc2_act, cc2_pose] = ConvCaps(
-            capsules=self.D, kernel_size=5, strides=1, padding='valid',
+            capsules=self.D, kernel_size=5, strides=2, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_2')([cc1_act, cc1_pose])
         [fc_act, fc_pose] = ClassCapsules(
