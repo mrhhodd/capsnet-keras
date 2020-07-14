@@ -26,7 +26,7 @@ K.set_image_data_format('channels_last')
 
 
 class CapsNet():
-    def __init__(self,A=64, B=8, C=16, D=16,
+    def __init__(self,A=64, B=8, C=16, D=16, cckernel=5,
                  input_shape=[32, 32, 1],
                  batch_size=64,
                  lr=3e-3,
@@ -38,6 +38,7 @@ class CapsNet():
         self.B = B
         self.C = C
         self.D = D
+        self.cckernel = cckernel
         self.input_shape = input_shape
         self.batch_size = batch_size
         self.n_class = n_class
@@ -66,11 +67,11 @@ class CapsNet():
             capsules=self.B, kernel_size=1, strides=1, padding='valid',
             name='primCaps')(conv)
         [cc1_act, cc1_pose] = ConvCaps(
-            capsules=self.C, kernel_size=5, strides=2, padding='valid',
+            capsules=self.C, kernel_size=self.cckernel, strides=2, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_1')([pc_act, pc_pose])
         [cc2_act, cc2_pose] = ConvCaps(
-            capsules=self.D, kernel_size=5, strides=1, padding='valid',
+            capsules=self.D, kernel_size=self.cckernel, strides=1, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_2')([cc1_act, cc1_pose])
         [fc_act, fc_pose] = ClassCapsules(
