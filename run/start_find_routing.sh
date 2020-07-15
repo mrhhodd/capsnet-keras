@@ -24,7 +24,7 @@ do
     SHAPE=128 \
     DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/2 \
     EPOCHS=20 \
-    BATCH_SIZE=16 \
+    BATCH_SIZE=4 \
     ROUTINGS=${ROUTING} \
     LR=0.04 \
     LR_DECAY=0.97 \
