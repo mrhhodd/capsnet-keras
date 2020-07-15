@@ -1,7 +1,11 @@
-import tensorflow as tf
-from tensorflow.keras import backend as K
+from tensorflow.keras.metrics import TruePositives, TrueNegatives, FalsePositives, FalseNegatives
 
 EPSILON = K.epsilon()
+threshold = 0.5
+true_positive = TruePositives(threshold)
+true_negative = TrueNegatives(threshold)
+false_positive = FalsePositives(threshold)
+false_negative = FalseNegatives(threshold)
 
 def specificity(y_true, y_pred):
     [_, tn, fp, _] = _analyse_data(y_true, y_pred)
@@ -21,11 +25,7 @@ def f1_score(y_true, y_pred):
 
 
 def _analyse_data(y_true, y_pred):
-    n_class = y_pred.shape[1]
-    # y_pred = K.one_hot(K.argmax(y_pred, axis=1), n_class)
-    y_pred = tf.to_int32(y_pred > 0.5)
-    true_positive = K.sum(y_true * y_pred, axis=1)
-    true_negative = K.sum((1 - y_true) * (1 - y_pred), axis=1)
-    false_positive = K.sum((1 - y_true) * y_pred, axis=1)
-    false_negative = K.sum(y_true * (1 - y_pred), axis=1)
-    return true_positive, true_negative, false_positive, false_negative
+    return true_positive.update_state(y_true, y_pred).result().numpy() \
+      true_negative.update_state(y_true, y_pred).result().numpy() \
+      false_positive.update_state(y_true, y_pred).result().numpy() \
+      false_negative.update_state(y_true, y_pred).result().numpy() \
