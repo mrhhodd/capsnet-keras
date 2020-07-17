@@ -279,8 +279,6 @@ class ClassCapsules(BaseCaps):
             in_act_tiled, votes, self.beta_a, self.beta_v, self.routings, log=True)
         out_act = K.reshape(out_act, [batch_size, self.capsules])
         out_pose = K.reshape(out_pose, [batch_size, self.capsules, 4, 4])
-        tf.print("## CAPS OUT:")
-        tf.print(tf.reduce_mean(out_act), tf.reduce_min(out_act), tf.reduce_max(out_act))
         return out_act, out_pose
 
     def _coord_addition(self, votes):
@@ -356,6 +354,8 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
             rr = _routing_e_step(means, std_devs, out_act, votes)
 
     # return out_act and means for parent capsule poses
+    tf.print("## CAPS OUT:")
+    tf.print(tf.reduce_mean(out_act), tf.reduce_min(out_act), tf.reduce_max(out_act))
     return out_act, means
 
 
