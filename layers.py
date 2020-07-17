@@ -280,7 +280,7 @@ class ClassCapsules(BaseCaps):
         out_act = K.reshape(out_act, [batch_size, self.capsules])
         out_pose = K.reshape(out_pose, [batch_size, self.capsules, 4, 4])
         tf.print("## CAPS OUT:")
-        tf.print(tf.reduce_mean(out_act), tf.reduce_min(out_act), rf.reduce_max(out_act))
+        tf.print(tf.reduce_mean(out_act), tf.reduce_min(out_act), tf.reduce_max(out_act))
         return out_act, out_pose
 
     def _coord_addition(self, votes):
