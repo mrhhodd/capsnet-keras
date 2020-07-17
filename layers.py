@@ -92,7 +92,8 @@ class BaseCaps(layers.Layer):
             name='beta_a',
             shape=[self.capsules],
             # initializer='glorot_uniform',
-            initializer=initializers.TruncatedNormal(mean=-1000.0, stddev=500.0),
+            initializer=initializers.TruncatedNormal(mean=0.0, stddev=1.0),
+            # initializer=initializers.TruncatedNormal(mean=-1000.0, stddev=500.0),
             # regularizer=self.weights_regularizer,
             trainable=True
             )
@@ -278,6 +279,8 @@ class ClassCapsules(BaseCaps):
             in_act_tiled, votes, self.beta_a, self.beta_v, self.routings, log=True)
         out_act = K.reshape(out_act, [batch_size, self.capsules])
         out_pose = K.reshape(out_pose, [batch_size, self.capsules, 4, 4])
+        tf.print("## CAPS OUT:")
+        tf.print(tf.reduce_mean(out_act), tf.reduce_min(out_act), rf.reduce_max(out_act))
         return out_act, out_pose
 
     def _coord_addition(self, votes):
