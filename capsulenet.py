@@ -80,8 +80,7 @@ class CapsNet():
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
                       loss=self.spread_loss,
-                    #   metrics=['accuracy', specificity, sensitivity, f1_score])
-                      metrics=['accuracy', metrics.Recall(), metrics.Precision()])
+                      metrics=['accuracy', specificity, sensitivity, f1_score, metrics.Recall(), metrics.Precision()])
 
         print(vars(self))
         print(model.layers)
