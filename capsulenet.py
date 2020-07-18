@@ -95,14 +95,14 @@ class CapsNet():
         # where step is the training step. We trained with batch size of 64."
         # https://openreview.net/forum?id=HJWLfGWRb
 
-        m_min = 0.2
+        m_min = 0.4
         m_delta = 0.79
         p = 50000.0 * 64.0 / self.batch_size
         margin = m_min + m_delta * \
             K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = K.reshape(tf.boolean_mask(y_pred, 1 - y_true), shape=(-1, self.n_class - 1))
         a_t = K.reshape(tf.boolean_mask(y_pred, y_true), shape=(-1, 1))
-        loss = K.square(K.maximum(0., margin - 2 * (a_t - a_i)))
+        loss = K.square(K.maximum(0., margin - 4 * (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
         return K.mean(K.sum(loss, axis=1, keepdims=True))
 
