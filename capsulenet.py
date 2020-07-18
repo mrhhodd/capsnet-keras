@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.keras import models, layers, optimizers, callbacks, regularizers, losses, metrics
 from tensorflow.keras import backend as K
 from layers import PrimaryCaps, ConvCaps, ClassCapsules
-from metrics import specificity, sensitivity, f1_score
+from metrics import accuracy, specificity, sensitivity, f1_score
 K.set_image_data_format('channels_last')
 
 # TODO: How to test? divide data into 10 data sets, then run K-fold validation for different validation splits?
