@@ -82,6 +82,7 @@ class CapsNet():
                       loss=self.spread_loss,
                       metrics=['accuracy', specificity, sensitivity, f1_score])
 
+        print(vars(self))
         print(model.layers)
 
         model.summary()

@@ -353,7 +353,6 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
             rr = _routing_e_step(means, std_devs, out_act, votes)
 
     # return out_act and means for parent capsule poses
-    tf.print("\n", tf.reduce_mean(out_act), tf.reduce_min(out_act), tf.reduce_max(out_act))
     return out_act, means
 
 
