@@ -1,7 +1,7 @@
 import os
 from contextlib import redirect_stdout
 import tensorflow as tf
-from tensorflow.keras import models, layers, optimizers, callbacks, regularizers, losses
+from tensorflow.keras import models, layers, optimizers, callbacks, regularizers, losses, metrics
 from tensorflow.keras import backend as K
 from layers import PrimaryCaps, ConvCaps, ClassCapsules
 from metrics import specificity, sensitivity, f1_score
@@ -80,7 +80,8 @@ class CapsNet():
 
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
                       loss=self.spread_loss,
-                      metrics=['accuracy', specificity, sensitivity, f1_score])
+                    #   metrics=['accuracy', specificity, sensitivity, f1_score])
+                      metrics=['accuracy', 'recall', 'precision'])
 
         print(vars(self))
         print(model.layers)
