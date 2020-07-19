@@ -27,7 +27,7 @@ do
     EPOCHS=20 \
     BATCH_SIZE=16 \
     ROUTINGS=2 \
-    LR=$LR4 \
+    LR=$LR \
     LR_DECAY=0.97 \
     RR=0.000002 \
     A=64 B=8 C=16 D=16 \
