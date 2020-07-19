@@ -33,3 +33,4 @@ do
     RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/OCT2017_128x128_SBB/FIND_CCKERNEL___${EPOCHS}EPOCHS_${ROUTINGS}ROUTINGS_${LR}LR_${LR_DECAY}LR_DECAY_${RR}RR_${A}A_${B}B_${C}C_${D}D_${cckernel}cckernel/ \
     python3 /net/people/plgmwnetrzak/magisterka/capsnet-keras/main.py
 done
+ 

@@ -26,7 +26,7 @@ K.set_image_data_format('channels_last')
 
 
 class CapsNet():
-    def __init__(self,A=64, B=8, C=16, D=16, cckernel=5,
+    def __init__(self,A=64, B=8, C=16, D=16, cckernel1=5, cckernel2=5,
                  input_shape=[32, 32, 1],
                  batch_size=64,
                  lr=3e-3,
@@ -38,7 +38,8 @@ class CapsNet():
         self.B = B
         self.C = C
         self.D = D
-        self.cckernel = cckernel
+        self.cckernel1 = cckernel1
+        self.cckernel2 = cckernel2
         self.input_shape = input_shape
         self.batch_size = batch_size
         self.n_class = n_class
@@ -66,11 +67,11 @@ class CapsNet():
             capsules=self.B, kernel_size=1, strides=1, padding='valid',
             name='primCaps')(conv)
         [cc1_act, cc1_pose] = ConvCaps(
-            capsules=self.C, kernel_size=self.cckernel, strides=2, padding='valid',
+            capsules=self.C, kernel_size=self.cckernel1, strides=2, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_1')([pc_act, pc_pose])
         [cc2_act, cc2_pose] = ConvCaps(
-            capsules=self.D, kernel_size=self.cckernel, strides=1, padding='valid',
+            capsules=self.D, kernel_size=self.cckernel2, strides=1, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_2')([cc1_act, cc1_pose])
         [fc_act, fc_pose] = ClassCapsules(
@@ -95,14 +96,14 @@ class CapsNet():
         # where step is the training step. We trained with batch size of 64."
         # https://openreview.net/forum?id=HJWLfGWRb
 
-        m_min = 0.4
+        m_min = 0.2
         m_delta = 0.79
-        p = 50000.0 * 64.0 / self.batch_size
+        p = 7000 / self.batch_size
         margin = m_min + m_delta * \
             K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = K.reshape(tf.boolean_mask(y_pred, 1 - y_true), shape=(-1, self.n_class - 1))
         a_t = K.reshape(tf.boolean_mask(y_pred, y_true), shape=(-1, 1))
-        loss = K.square(K.maximum(0., margin - 4 * (a_t - a_i)))
+        loss = K.square(K.maximum(0., margin - (a_t - a_i)))
         self.global_step.assign(self.global_step + 1)
         return K.mean(K.sum(loss, axis=1, keepdims=True))
 

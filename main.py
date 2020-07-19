@@ -22,11 +22,12 @@ A = int(os.getenv('A', 64))
 B = int(os.getenv('B', 8))
 C = int(os.getenv('C', 16))
 D = int(os.getenv('D', 16))
-cckernel = int(os.getenv('cckernel', 5))
+cckernel1 = int(os.getenv('cckernel', 5))
+cckernel2 = int(os.getenv('cckernel', 5))
 
 if __name__ == "__main__":
     cn = CapsNet(
-        A=A,B=B,C=C,D=D,cckernel=cckernel,
+        A=A,B=B,C=C,D=D,cckernel1=cckernel1,cckernel2=cckernel2,
         n_class=4, 
         input_shape=INPUT_SHAPE, 
         batch_size=BATCH_SIZE,
@@ -42,7 +43,7 @@ if __name__ == "__main__":
         target_size=(SHAPE, SHAPE), 
         validation_split=0.2
         )
-    cn_log_dir = RESULTS_BASE_DIR/cn.model.name/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_epochs_{EPOCHS}"
+    cn_log_dir = RESULTS_BASE_DIR/cn.model.name/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     train(
         network=cn, 
         data_gen=data_gen, 
