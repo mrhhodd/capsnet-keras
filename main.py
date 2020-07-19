@@ -22,8 +22,8 @@ A = int(os.getenv('A', 64))
 B = int(os.getenv('B', 8))
 C = int(os.getenv('C', 16))
 D = int(os.getenv('D', 16))
-cckernel1 = int(os.getenv('cckernel', 5))
-cckernel2 = int(os.getenv('cckernel', 5))
+cckernel1 = int(os.getenv('cckernel1', 5))
+cckernel2 = int(os.getenv('cckernel2', 5))
 
 if __name__ == "__main__":
     cn = CapsNet(
