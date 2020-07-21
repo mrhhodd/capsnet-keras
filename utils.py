@@ -1,6 +1,15 @@
 from os import makedirs
+from tensorflow.keras import callbacks
 
-def train(model, data_gen, save_dir, epochs=30, callbacks=[]):
+def train(model, data_gen, save_dir, epochs=30, use_lr_decay=True):
+    cn_callbacks = [callbacks.CSVLogger(f"{cn_log_dir}/log.csv")]
+
+    if use_lr_decay:
+        cn_callbacks.append(
+            callbacks.LearningRateScheduler(
+                schedule=lambda epoch, lr: lr * LR_DECAY ** K.minimum(20000.0, epoch))
+        )
+
     makedirs(save_dir, exist_ok=True)
     model.fit(
         data_gen.training_generator,
@@ -10,11 +19,11 @@ def train(model, data_gen, save_dir, epochs=30, callbacks=[]):
     )
 
 
-def test(model, data_gen, save_dir, callbacks=[]):
+def test(model, data_gen, save_dir):
     makedirs(save_dir, exist_ok=True)
     model.test(
         data_gen.validation_generator,
-        callbacks=callbacks
+        callbacks=[]
     )
 
 

@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 from pathlib import Path
-from tensorflow.keras import callbacks
 
 from model import EmCapsNet
 from data_generators import DataGen
@@ -27,15 +26,6 @@ WEIGHTS = os.getenv('WEIGHTS'. '')
 
 if __name__ == "__main__":
     cn_log_dir = RESULTS_BASE_DIR/MODEL_NAME/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    cn_callbacks = [callbacks.CSVLogger(f"{cn_log_dir}/log.csv")]
-
-    if USE_LR_DECAY:
-        # "We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96."
-        # https://openreview.net/forum?id=HJWLfGWRb&noteId=rJeQnSsE3X
-        cn_callbacks.append(
-            callbacks.LearningRateScheduler(
-                schedule=lambda epoch, lr: lr * LR_DECAY ** K.minimum(20000.0, epoch))
-        )
 
     cn = EmCapsNet(
         name=MODEL_NAME,
@@ -62,8 +52,7 @@ if __name__ == "__main__":
         test(
             model=cn.model,
             data_gen=data_gen,
-            save_dir=cn_log_dir,
-            callbacks=[]
+            save_dir=cn_log_dir
         )
     else:
         print("Training model")
@@ -72,6 +61,6 @@ if __name__ == "__main__":
             data_gen=data_gen,
             save_dir=cn_log_dir,
             epochs=EPOCHS,
-            callbacks=cn_callbacks
+            use_lr_decay=USE_LR_DECAY
         )
         log_results(cn.model, cn_log_dir, data_gen)
