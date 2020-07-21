@@ -1,5 +1,7 @@
+from os import makedirs
+
 def train(model, data_gen, save_dir, epochs=30, callbacks=[]):
-    os.makedirs(save_dir, exist_ok=True)
+    makedirs(save_dir, exist_ok=True)
     model.fit(
         data_gen.training_generator,
         epochs=epochs,
@@ -9,7 +11,7 @@ def train(model, data_gen, save_dir, epochs=30, callbacks=[]):
 
 
 def test(model, data_gen, save_dir, callbacks=[]):
-    os.makedirs(save_dir, exist_ok=True)
+    makedirs(save_dir, exist_ok=True)
     model.test(
         data_gen.validation_generator,
         callbacks=callbacks
