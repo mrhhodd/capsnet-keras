@@ -26,7 +26,8 @@ USE_LR_DECAY = bool(os.getenv('USE_LR_DECAY', True))
 WEIGHTS = os.getenv('WEIGHTS')
 
 if __name__ == "__main__":
-    cn_callbacks = [callbacks.CSVLogger(f"{save_dir}/log.csv")]
+    cn_log_dir = RESULTS_BASE_DIR/MODEL_NAME/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    cn_callbacks = [callbacks.CSVLogger(f"{cn_log_dir}/log.csv")]
 
     if USE_LR_DECAY:
         # "We use an exponential decay with learning rate: 3e-3, decay_steps: 20000, decay rate: 0.96."
@@ -57,8 +58,6 @@ if __name__ == "__main__":
 
     if WEIGHTS:
         print("Loading and evaluating model")
-        cn_log_dir = RESULTS_BASE_DIR/MODEL_NAME / \
-            f"Evaluate_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         cn.load_weights(weights_file=WEIGHTS)
         test(
             model=cn.model,
@@ -68,8 +67,6 @@ if __name__ == "__main__":
         )
     else:
         print("Training model")
-        cn_log_dir = RESULTS_BASE_DIR/MODEL_NAME / \
-            f"Train_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         train(
             model=cn.model,
             data_gen=data_gen,
