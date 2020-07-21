@@ -37,7 +37,7 @@ if __name__ == "__main__":
         )
 
     cn = CapsNet(
-        name='EM-CapsNet',
+        name=MODEL_NAME,
         input_shape=(SHAPE, SHAPE, 1),
         batch_size=BATCH_SIZE,
         n_class=4,

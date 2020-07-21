@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.keras import models, layers, optimizers, callbacks, regularizers, losses, metrics
 from tensorflow.keras import backend as K
 from layers import PrimaryCaps, ConvCaps, ClassCapsules
-from metrics import accuracy2, specificity, sensitivity, f1_score
+from metrics import accuracy, specificity, sensitivity, f1_score
 
 K.set_image_data_format('channels_last')
 
