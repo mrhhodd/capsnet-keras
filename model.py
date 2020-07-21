@@ -72,7 +72,7 @@ class EmCapsNet():
 
         model = models.Model(inputs, fc_act, name=self.model_name)
         model.compile(optimizer=optimizers.Adam(lr=self.lr),
-                      loss=self.spread_loss,
+                      loss=self._spread_loss,
                       metrics=[accuracy, specificity, sensitivity, f1_score])
 
         model.summary()

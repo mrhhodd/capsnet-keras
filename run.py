@@ -37,7 +37,7 @@ if __name__ == "__main__":
                 schedule=lambda epoch, lr: lr * LR_DECAY ** K.minimum(20000.0, epoch))
         )
 
-    cn = CapsNet(
+    cn = EmCapsNet(
         name=MODEL_NAME,
         input_shape=(SHAPE, SHAPE, 1),
         batch_size=BATCH_SIZE,
