@@ -33,5 +33,5 @@ do
     A=64 B=8 C=16 D=16 \
     cckernel1=3 cckernel2=3 \
     RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/OCT2017_128x128_SBB/FINDLR__${EPOCHS}EPOCHS_${ROUTINGS}ROUTINGS_${LR}LR_${LR_DECAY}LR_DECAY_${RR}RR_${A}A_${B}B_${C}C_${D}D_${cckernel1}cckernel1_${cckernel2}cckernel2/ \
-    python3 /net/people/plgmwnetrzak/magisterka/capsnet-keras/main.py
+    python3 /net/people/plgmwnetrzak/magisterka/capsnet-keras/run.py
 done

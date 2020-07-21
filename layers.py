@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.keras import backend as K
 from tensorflow.keras import layers, activations, initializers
-import time
+
 
 def paper_initializer(shape, dtype):
     """
@@ -12,7 +12,9 @@ def paper_initializer(shape, dtype):
     """
     # assert shape_dims >= 2
     assert shape[-1] == shape[-2], "last two value has to be an NxN matrix"
-    return initializers.Identity()(shape=shape[-2:], dtype=dtype) + initializers.RandomUniform(minval=-0.03, maxval=0.03)(shape=shape, dtype=dtype)
+    return initializers.Identity()(shape=shape[-2:], dtype=dtype) \
+        + initializers.RandomUniform(minval=-0.03,
+                                     maxval=0.03)(shape=shape, dtype=dtype)
 
 
 class PrimaryCaps(layers.Layer):
@@ -85,13 +87,14 @@ class BaseCaps(layers.Layer):
             initializer=initializers.TruncatedNormal(mean=0.0, stddev=1.0),
             regularizer=None,
             trainable=True
-            )
+        )
         self.beta_a = self.add_weight(
             name='beta_a',
             shape=[self.capsules],
-            initializer=initializers.TruncatedNormal(mean=-500.0, stddev=250.0),
+            initializer=initializers.TruncatedNormal(
+                mean=-500.0, stddev=250.0),
             trainable=True
-            )
+        )
 
     def _generate_voting_map(self, size_in, size_out, kernel_size, stride):
         voting_map = np.zeros((size_out ** 2, size_in ** 2))
@@ -152,7 +155,6 @@ class ConvCaps(BaseCaps):
         # in_pose_shape: [batch_size, height*width, in_capsules, 4, 4]
         in_act = K.reshape(
             in_act, [batch_size, self.spatial_size_in ** 2, self.in_capsules, 1])
-        # # tf.print("in_act 1 conv caps", in_act[0])
         in_pose = K.reshape(
             in_pose, [batch_size, self.spatial_size_in ** 2, self.in_capsules, 4, 4])
 
@@ -160,7 +162,6 @@ class ConvCaps(BaseCaps):
         # in_act_filtered shape: [batch_size, out_height*out_width, kernel_size^2, in_capsules, 1]
         # in_pose_filtered shape: [batch_size, out_height*out_width, kernel_size^2, in_capsules, 4, 4]
         in_act_filtered = tf.gather(in_act, self.child_parent_map, axis=1)
-        # # tf.print("in_act_filtered 1 conv caps", in_act_filtered[0])
         in_pose_filtered = tf.gather(in_pose, self.child_parent_map, axis=1)
 
         # reshape input - flatten all input capsules and add another dimension for parent capsules
@@ -204,8 +205,6 @@ class ConvCaps(BaseCaps):
 
 
 class ClassCapsules(BaseCaps):
-    # basically a fully connected layer?
-
     def build(self, input_shape):
         super(ClassCapsules, self).build(input_shape)
         # transformation_weights shape: [1, in_capsules, capsules, 4, 4]
@@ -296,11 +295,11 @@ class ClassCapsules(BaseCaps):
         w_offset = np.zeros([size, 16])
         h_offset = np.zeros([size, 16])
 
-        # first val of the righmost column for width
+        # first value of the righmost column is used for width
         w_offset[:, 3] = offset_vals
         w_offset = np.reshape(w_offset, [1, 1, size, 1, 1, 16])
 
-        # second val of the righmost column for height
+        # second value of the righmost column is used for height
         h_offset[:, 7] = offset_vals
         h_offset = np.reshape(h_offset, [1, size, 1, 1, 1, 16])
 
@@ -318,13 +317,13 @@ class ClassCapsules(BaseCaps):
 
 
 def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
-    t0=time.time()
     batch_size = tf.shape(votes)[0]
     out_capsules = tf.shape(votes)[3]
     # votes shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 16]
     # initialize R matrix with 1/out_capsules
     # rr shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules, 1]
-    rr = K.mean(K.ones_like(votes) / tf.cast(out_capsules, tf.float32), axis=-1, keepdims=True)
+    rr = K.mean(K.ones_like(votes) / tf.cast(out_capsules,
+                                             tf.float32), axis=-1, keepdims=True)
 
     # beta_v shape: [batch_size, 1, 1, out_capsules, 1]
     beta_v = K.reshape(beta_v, [1, 1, 1, out_capsules, 1])
@@ -339,7 +338,6 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
         lambd = 0.01 * (1 - tf.pow(0.95, tf.cast(i + 1, tf.float32)))
 
         # compute output activations, means and standard deviations
-        t1=time.time()
         out_act, means, std_devs = _routing_m_step(
             in_act, rr, votes, lambd, beta_a, beta_v)
 
@@ -354,8 +352,6 @@ def em_routing(in_act, votes, beta_a, beta_v, routings, log=False):
 
 def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # M_step 2 - scale the R matrix by their corresponding input activation values
-    t1=time.time()
-
     rr_scaled = tf.multiply(rr, in_act)
     # replicate it for each pose value
     # rr_tiled shape: [batch_size, 1, in_capsules*in_height*in_width, out_capsules,16]
@@ -378,8 +374,8 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # M_step 4 - compute std_dev for each parent capsule
     # std_dev shape: [batch_size, 1, 1, out_capsules, 16]
     # sqrt causing some NaNs? use variance instead
-    std_dev =  tf.reduce_sum(tf.multiply(rr_tiled, tf.square(votes - means)), axis=2,
-                      keepdims=True) / (rr_sum + K.epsilon())
+    std_dev = tf.reduce_sum(tf.multiply(rr_tiled, tf.square(votes - means)), axis=2,
+                            keepdims=True) / (rr_sum + K.epsilon())
     # std_dev = tf.sqrt(
     #     tf.reduce_sum(tf.multiply(rr_tiled, tf.square(votes - means)), axis=2,
     #                   keepdims=True) / (rr_sum + K.epsilon())
@@ -389,7 +385,8 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
     # beta_v shape: [batch_size, 1, 1, 1, out_capsules, 1]
     # costs shape: [batch_size, 1, 1, out_capsules, 16]
     # costs = beta_v + tf.multiply(0.5 * K.log(std_dev + K.epsilon()), rr_sum * norm_factor)
-    costs = tf.multiply(beta_v + 0.5 * K.log(std_dev + K.epsilon()), rr_sum * norm_factor)
+    costs = tf.multiply(beta_v + 0.5 * K.log(std_dev +
+                                             K.epsilon()), rr_sum * norm_factor)
 
     # M_step 6 - compute activation for each parent capsule
     # beta_a shape: [batch_size, 1, 1, out_capsules]

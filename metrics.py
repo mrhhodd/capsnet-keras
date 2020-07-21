@@ -2,7 +2,8 @@ from tensorflow.keras import backend as K
 
 EPSILON = K.epsilon()
 
-def accuracy2(y_true, y_pred):
+
+def accuracy(y_true, y_pred):
     [tp, tn, fp, fn] = _analyse_data(y_true, y_pred)
     return K.mean((tp + tn) / (tp + tn + fp + fn + EPSILON))
 
@@ -14,7 +15,7 @@ def specificity(y_true, y_pred):
 
 def sensitivity(y_true, y_pred):
     [tp, _, _, fn] = _analyse_data(y_true, y_pred)
-    return K.mean(tp / (tp + fn + EPSILON))   
+    return K.mean(tp / (tp + fn + EPSILON))
 
 
 def f1_score(y_true, y_pred):

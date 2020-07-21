@@ -3,6 +3,11 @@ from pathlib import Path
 import numpy as np
 
 class DataGen():
+    """
+        Wrapper class for the data generators objects.
+        Input images should be stored in the data_dir 
+        separated into directories based on the image class/label.
+    """
     def __init__(self, batch_size, data_dir, target_size, validation_split):
         data_gen = ImageDataGenerator(
             preprocessing_function=lambda input: (input - np.mean(input))/(1e-9 + np.var(input)),
