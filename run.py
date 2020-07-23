@@ -23,7 +23,7 @@ C = int(os.getenv('C', 16))
 D = int(os.getenv('D', 16))
 USE_LR_DECAY = bool(os.getenv('USE_LR_DECAY', True))
 WEIGHTS = os.getenv('WEIGHTS', '')
-
+VALIDATION_SPLIT = float(os.getenv('VALIDATION_SPLIT', 0.2))
 if __name__ == "__main__":
     cn_log_dir = RESULTS_BASE_DIR/MODEL_NAME/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         batch_size=BATCH_SIZE,
         data_dir=DATA_DIR,
         target_size=(SHAPE, SHAPE),
-        validation_split=0.2
+        validation_split=VALIDATION_SPLIT
     )
 
     if WEIGHTS:
