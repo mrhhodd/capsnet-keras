@@ -5,6 +5,8 @@ from pathlib import Path
 from model import EmCapsNet
 from data_generators import DataGen
 from utils import train, test
+from tensorflow.keras import callbacks
+
 
 DATA_DIR = os.getenv('DATA_DIR') # Location where input data is stored
 RESULTS_BASE_DIR = Path(os.getenv('RESULTS_BASE_DIR')) # Base location for output data 

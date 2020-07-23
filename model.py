@@ -2,15 +2,12 @@ import os
 import tensorflow as tf
 from tensorflow.keras import models, layers, optimizers, regularizers, metrics
 from tensorflow.keras import backend as K
-from layers import PrimaryCaps, ConvCaps, ClassCapsules
+from layers import PrimaryCaps, ConvCaps, ClassCaps
 from metrics import accuracy, specificity, sensitivity, f1_score
 
 K.set_image_data_format('channels_last')
 
 class EmCapsNet():
-    """
-    """
-
     def __init__(self,
                  name,
                  input_shape,
@@ -51,7 +48,7 @@ class EmCapsNet():
             name='conv')(inputs)
         [pc_act, pc_pose] = PrimaryCaps(
             capsules=self.B, kernel_size=1, strides=1, padding='valid',
-            name='primCaps')(conv)
+            name='prim_caps')(conv)
         [cc1_act, cc1_pose] = ConvCaps(
             capsules=self.C, kernel_size=5, strides=2, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
@@ -60,7 +57,7 @@ class EmCapsNet():
             capsules=self.D, kernel_size=3, strides=1, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_2')([cc1_act, cc1_pose])
-        [fc_act, fc_pose] = ClassCapsules(
+        [fc_act, fc_pose] = ClassCaps(
             capsules=self.n_class, routings=self.routings, weights_reg=self.regularizer,
             name='class_caps')([cc2_act, cc2_pose])
 

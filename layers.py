@@ -193,9 +193,9 @@ class ConvCaps(BaseCaps):
         return ((spatial_shape + (self.capsules, 1)), (spatial_shape + (self.capsules, 4, 4)))
 
 
-class ClassCapsules(BaseCaps):
+class ClassCaps(BaseCaps):
     def build(self, input_shape):
-        super(ClassCapsules, self).build(input_shape)
+        super(ClassCaps, self).build(input_shape)
         # transformation_weights shape: [1, in_capsules, capsules, 4, 4]
         self.transformation_weights = self.add_weight(name='transformation_weights',
                                                       shape=(1, 1,
@@ -213,7 +213,7 @@ class ClassCapsules(BaseCaps):
             stride=1)
 
     def call(self, inputs):
-        super(ClassCapsules, self).call(inputs)
+        super(ClassCaps, self).call(inputs)
         [in_act, in_pose] = inputs
         batch_size = tf.shape(in_act)[0]
         # flatten 2D capsule array to 1D vector
