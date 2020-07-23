@@ -1,5 +1,4 @@
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from pathlib import Path
 import numpy as np
 
 class DataGen():

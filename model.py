@@ -37,7 +37,7 @@ class EmCapsNet():
         with strategy.scope():
             self.model = self._create_model()
 
-    def load_weights(weights_file):
+    def load_weights(self, weights_file):
         self.model.load_weights(weights_file)
 
     def _create_model(self):

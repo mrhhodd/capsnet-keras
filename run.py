@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     if WEIGHTS:
         print("Loading and evaluating model")
-        cn.load_weights(weights_file=str(WEIGHTS))
+        cn.load_weights(str(WEIGHTS))
         test(
             model=cn.model,
             data_gen=data_gen,
