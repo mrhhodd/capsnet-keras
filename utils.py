@@ -1,6 +1,6 @@
 from os import makedirs, getenv
 from tensorflow.keras import backend as K
-from tensorflow.keras import callbacks
+from tensorflow.keras import callbacks, initializers
 from contextlib import redirect_stdout
 
 
@@ -12,7 +12,7 @@ def train(model, data_gen, save_dir, epochs, callbacks):
         validation_data=data_gen.validation_generator,
         callbacks=callbacks
     )
-    model.save_weights(f"{save_dir}/trained_model.h5"))
+    model.save_weights(f"{save_dir}/trained_model.h5")
     _log_results(model, data_gen, save_dir)
 
 
@@ -29,3 +29,9 @@ def _log_results(model, data_gen, save_dir):
             model.evaluate(data_gen.validation_generator)
 
     print(f"Logs available in:\n {save_dir}")
+
+
+def matrix_initializer(shape, dtype):
+    return initializers.Identity()(shape=shape[-2:], dtype=dtype) \
+        + initializers.RandomUniform(minval=-0.03,
+                                     maxval=0.03)(shape=shape, dtype=dtype)

@@ -7,25 +7,20 @@ from metrics import accuracy, specificity, sensitivity, f1_score
 
 K.set_image_data_format('channels_last')
 
-# TODO: test after the cleanup
-# TODO: try no learning rate decay
-# TODO: document code - either in docstring and/or in the run.py?
-# TODO: docker with example data and pre-trained model inside, just running with run.py and allow configuration via env variables
-
 class EmCapsNet():
     """
     """
 
     def __init__(self,
                  name,
-                 input_shape=[128, 128, 1],
-                 batch_size=32,
-                 n_class=4,
-                 lr=3e-3,
-                 lr_decay=0.96,
-                 routings=3,
-                 regularization_rate=0.0000002,
-                 A=64, B=8, C=16, D=16
+                 input_shape,
+                 batch_size,
+                 n_class,
+                 lr,
+                 lr_decay,
+                 routings,
+                 regularization_rate,
+                 A, B, C, D
                  ):
         self.model_name = name
         self.input_shape = input_shape
