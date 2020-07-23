@@ -1,7 +1,6 @@
 import os
-from contextlib import redirect_stdout
 import tensorflow as tf
-from tensorflow.keras import models, layers, optimizers, callbacks, regularizers, losses, metrics
+from tensorflow.keras import models, layers, optimizers, regularizers, metrics
 from tensorflow.keras import backend as K
 from layers import PrimaryCaps, ConvCaps, ClassCapsules
 from metrics import accuracy, specificity, sensitivity, f1_score

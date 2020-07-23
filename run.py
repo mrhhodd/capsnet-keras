@@ -4,7 +4,7 @@ from pathlib import Path
 
 from model import EmCapsNet
 from data_generators import DataGen
-from utils import train, log_results
+from utils import train, test
 
 DATA_DIR = os.getenv('DATA_DIR') # Location where input data is stored
 RESULTS_BASE_DIR = Path(os.getenv('RESULTS_BASE_DIR')) # Base location for output data 
@@ -22,7 +22,7 @@ B = int(os.getenv('B', 8))
 C = int(os.getenv('C', 16))
 D = int(os.getenv('D', 16))
 USE_LR_DECAY = bool(os.getenv('USE_LR_DECAY', True))
-WEIGHTS = os.getenv('WEIGHTS'. '')
+WEIGHTS = os.getenv('WEIGHTS', '')
 
 if __name__ == "__main__":
     cn_log_dir = RESULTS_BASE_DIR/MODEL_NAME/f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -56,11 +56,18 @@ if __name__ == "__main__":
         )
     else:
         print("Training model")
+
+        cn_callbacks = [callbacks.CSVLogger(f"{cn_log_dir}/log.csv")]
+        if USE_LR_DECAY:
+            cn_callbacks.append(
+                callbacks.LearningRateScheduler(
+                    schedule=lambda epoch, lr: lr * LR_DECAY ** K.minimum(20000.0, epoch))
+            )
+
         train(
             model=cn.model,
             data_gen=data_gen,
             save_dir=cn_log_dir,
             epochs=EPOCHS,
-            use_lr_decay=USE_LR_DECAY
+            callbacks=cn_callbacks
         )
-        log_results(cn.model, cn_log_dir, data_gen)
