@@ -15,9 +15,9 @@
 #SBATCH --gres=gpu:4
 
 
-export LD_LIBRARY_PATH=/net/people/plgmwnetrzak/magisterka/cuda/lib64:$LD_LIBRARY_PATH 
-export PYTHONPATH=/net/people/plgmwnetrzak/magisterka/capsnet-keras:$PYTHONPATH 
-module add plgrid/libs/tensorflow-gpu/2.2.0-python-3.8 
+# export LD_LIBRARY_PATH=/net/people/plgmwnetrzak/magisterka/cuda/lib64:$LD_LIBRARY_PATH 
+# export PYTHONPATH=/net/people/plgmwnetrzak/magisterka/capsnet-keras:$PYTHONPATH 
+# module add plgrid/libs/tensorflow-gpu/2.2.0-python-3.8 
 
 echo "${SPLIT} ${I}" 
 # SHAPE=128 \
