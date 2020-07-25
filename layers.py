@@ -81,7 +81,7 @@ class BaseCaps(layers.Layer):
             name='beta_a',
             shape=[self.capsules],
             initializer=initializers.TruncatedNormal(
-                mean=-500.0, stddev=250.0),
+                mean=0.0, stddev=1.0),
             trainable=True
         )
 
@@ -89,7 +89,6 @@ class BaseCaps(layers.Layer):
         voting_map = np.zeros((size_out ** 2, size_in ** 2))
         parent_id = 0
         valid_in = range(0, size_in - kernel_size + 1, stride)
-        assert size_out == len(valid_in), "SIZES DOESNT FIT"
         for row in valid_in:
             for col in valid_in:
                 for kernel_row in range(0, kernel_size):
