@@ -73,7 +73,7 @@ class BaseCaps(layers.Layer):
         self.beta_v = self.add_weight(
             name='beta_v',
             shape=[self.capsules],
-            initializer=initializers.TruncatedNormal(mean=0.0, stddev=80.0),
+            initializer=initializers.TruncatedNormal(mean=0.0, stddev=100.0),
             regularizer=None,
             trainable=True
         )
