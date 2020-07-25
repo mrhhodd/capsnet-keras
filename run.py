@@ -64,7 +64,8 @@ if __name__ == "__main__":
         if USE_LR_DECAY:
             cn_callbacks.append(
                 callbacks.LearningRateScheduler(
-                    schedule=lambda epoch, lr: lr * LR_DECAY ** min(20000.0, epoch))
+                    # schedule=lambda epoch, lr: lr * LR_DECAY ** min(20000.0, epoch))
+                    schedule=lambda epoch, lr: lr * LR_DECAY ** min(15.0, epoch))
             )
 
         train(

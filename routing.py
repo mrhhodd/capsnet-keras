@@ -60,18 +60,12 @@ def _routing_m_step(in_act, rr, votes, lambd, beta_a, beta_v):
 
     # M_step 4 - compute std_dev for each parent capsule
     # std_dev shape: [batch_size, 1, 1, out_capsules, 16]
-    # sqrt causing some NaNs? use variance instead
     std_dev = tf.reduce_sum(tf.multiply(rr_tiled, tf.square(votes - means)), axis=2,
                             keepdims=True) / (rr_sum + K.epsilon())
-    # std_dev = tf.sqrt(
-    #     tf.reduce_sum(tf.multiply(rr_tiled, tf.square(votes - means)), axis=2,
-    #                   keepdims=True) / (rr_sum + K.epsilon())
-    # )
 
     # M_step 5 - compute costs for each parent capsule
     # beta_v shape: [batch_size, 1, 1, 1, out_capsules, 1]
     # costs shape: [batch_size, 1, 1, out_capsules, 16]
-    # costs = beta_v + tf.multiply(0.5 * K.log(std_dev + K.epsilon()), rr_sum * norm_factor)
     costs = tf.multiply(beta_v + 0.5 * K.log(std_dev +
                                              K.epsilon()), rr_sum * norm_factor)
 
