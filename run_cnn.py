@@ -44,8 +44,6 @@ if __name__ == "__main__":
 
     cn_callbacks = [
         callbacks.CSVLogger(f"{cn_log_dir}/log.csv"),
-        callbacks.LearningRateScheduler(
-            schedule=lambda epoch, lr: lr * LR_DECAY)
     ]
 
     train(
