@@ -5,6 +5,7 @@ from pathlib import Path
 from data_generators import DataGen
 from utils import train, test
 from tensorflow.keras import Sequential, layers, losses, optimizers, callbacks
+from metrics import accuracy, specificity, sensitivity, f1_score
 
 DATA_DIR = os.getenv('DATA_DIR')
 RESULTS_BASE_DIR = Path(os.getenv('RESULTS_BASE_DIR'))
