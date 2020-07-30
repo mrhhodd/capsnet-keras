@@ -19,7 +19,7 @@ export PYTHONPATH=/net/people/plgmwnetrzak/magisterka/capsnet-keras:$PYTHONPATH
 module add plgrid/libs/tensorflow-gpu/2.2.0-python-3.8 
 
 SHAPE=128 \
-DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/${1} \
+DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_final/${1} \
 EPOCHS=100 \
 VALIDATION_SPLIT=${2} \
 BATCH_SIZE=32 \

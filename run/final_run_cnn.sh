@@ -20,7 +20,7 @@ module add plgrid/libs/tensorflow-gpu/2.2.0-python-3.8
 
 for split in 0.2 0.3 0.4; do
     for ((i=0;i<=9;i++)); do
-        DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/${i} \
+        DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_final/${i} \
         EPOCHS=100 \
         VALIDATION_SPLIT=${split} \
         BATCH_SIZE=32 \
