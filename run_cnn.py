@@ -20,14 +20,14 @@ if __name__ == "__main__":
         f"{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     lenet_model = Sequential(name=MODEL_NAME)
-    lenet_model.add(layers.Conv2D(filters=64, kernel_size=(9, 9), strides=1, activation='relu', input_shape=(SHAPE,SHAPE,1)))
+    lenet_model.add(layers.Conv2D(filters=64, kernel_size=(9, 9), strides=2, activation='relu', input_shape=(SHAPE,SHAPE,1)))
     lenet_model.add(layers.AveragePooling2D())
-    lenet_model.add(layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu'))
+    lenet_model.add(layers.Conv2D(filters=24, kernel_size=(3, 3), activation='relu'))
     lenet_model.add(layers.AveragePooling2D())
     lenet_model.add(layers.Flatten())
     lenet_model.add(layers.Dense(units=16, activation='relu'))
     lenet_model.add(layers.Dense(units=16, activation='relu'))
-    lenet_model.add(layers.Dense(units=CLASSES, activation = 'softmax'))
+    lenet_model.add(layers.Dense(units=4, activation = 'softmax'))
     lenet_model.compile(loss=losses.squared_hinge, optimizer=optimizers.Adam(lr=0.001),
                         metrics=[accuracy, specificity, sensitivity, f1_score])
     lenet_model.summary()
