@@ -1,6 +1,6 @@
 import os
 import tensorflow as tf
-from tensorflow.keras import models, layers, optimizers, regularizers, metrics
+from tensorflow.keras import models, layers, optimizers, regularizers
 from tensorflow.keras import backend as K
 from layers import PrimaryCaps, ConvCaps, ClassCaps
 from metrics import accuracy, specificity, sensitivity, f1_score
@@ -50,7 +50,7 @@ class EmCapsNet():
             capsules=self.B, kernel_size=1, strides=1, padding='valid',
             name='prim_caps')(conv)
         [cc1_act, cc1_pose] = ConvCaps(
-            capsules=self.C, kernel_size=5, strides=2, padding='valid',
+            capsules=self.C, kernel_size=3, strides=2, padding='valid',
             routings=self.routings, weights_reg=self.regularizer,
             name='conv_caps_1')([pc_act, pc_pose])
         [cc2_act, cc2_pose] = ConvCaps(
@@ -72,7 +72,7 @@ class EmCapsNet():
     def _spread_loss(self, y_true, y_pred):
         m_min = 0.2
         m_delta = 0.79
-        p = 7000 / self.batch_size
+        p = 12000 / self.batch_size
         margin = m_min + m_delta * \
             K.sigmoid(K.minimum(10.0, self.global_step / p - 4))
         a_i = K.reshape(tf.boolean_mask(y_pred, 1 - y_true),

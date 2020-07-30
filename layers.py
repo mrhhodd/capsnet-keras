@@ -73,7 +73,6 @@ class BaseCaps(layers.Layer):
         self.beta_v = self.add_weight(
             name='beta_v',
             shape=[self.capsules],
-            # initializer=initializers.TruncatedNormal(mean=0.0, stddev=100.0),
             initializer=initializers.TruncatedNormal(mean=0.0, stddev=1.0),
             regularizer=None,
             trainable=True
@@ -81,7 +80,6 @@ class BaseCaps(layers.Layer):
         self.beta_a = self.add_weight(
             name='beta_a',
             shape=[self.capsules],
-            # initializer=initializers.TruncatedNormal(mean=0.0, stddev=1.0),
             initializer=initializers.TruncatedNormal(mean=-1000.0, stddev=500.0),
             trainable=True
         )
@@ -116,7 +114,7 @@ class ConvCaps(BaseCaps):
         self.spatial_size_out = int(
             (self.spatial_size_in - self.kernel_size) / self.strides + 1)
 
-        # transformation_weights shape: [1, 3*3*in_capsules, capsules, 4, 4]
+        # transformation_weights shape: [1, kernel_size*kernel_size*in_capsules, capsules, 4, 4]
         self.transformation_weights = self.add_weight(name='transformation_weights',
                                                       shape=(1, 1,
                                                              self.kernel_size * self.kernel_size * self.in_capsules,

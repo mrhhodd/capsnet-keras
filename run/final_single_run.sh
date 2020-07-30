@@ -14,25 +14,21 @@
 #SBATCH --partition=plgrid-gpu-v100
 #SBATCH --gres=gpu:8
 
-i=$1
-split=$2
-
 export LD_LIBRARY_PATH=/net/people/plgmwnetrzak/magisterka/cuda/lib64:$LD_LIBRARY_PATH 
 export PYTHONPATH=/net/people/plgmwnetrzak/magisterka/capsnet-keras:$PYTHONPATH 
 module add plgrid/libs/tensorflow-gpu/2.2.0-python-3.8 
 
 SHAPE=128 \
-DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/${i} \
-EPOCHS=30 \
-VALIDATION_SPLIT=${split} \
-BATCH_SIZE=12 \
-ROUTINGS=2 \
+DATA_DIR=/net/people/plgmwnetrzak/magisterka/data/OCT2017_128x128_SBB/${1} \
+EPOCHS=100 \
+VALIDATION_SPLIT=${2} \
+BATCH_SIZE=32 \
+ROUTINGS=3 \
 LR=0.04 \
-LR_DECAY=0.97 \
-USE_LR_DECAY=True \
+LR_DECAY=0.96 \
 RR=0.0000002 \
 A=96 B=12 C=16 D=16 \
-RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/finals/${split}/${i} \
+RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/finals/${2}/${1} \
 python3 /net/people/plgmwnetrzak/magisterka/capsnet-keras/run.py
 
 
