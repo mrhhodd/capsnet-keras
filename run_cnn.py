@@ -4,8 +4,7 @@ from pathlib import Path
 
 from data_generators import DataGen
 from utils import train, test
-from tensorflow.keras import callbacks
-
+from tensorflow.keras import Sequential, layers, losses, optimizers, callbacks
 
 DATA_DIR = os.getenv('DATA_DIR')
 RESULTS_BASE_DIR = Path(os.getenv('RESULTS_BASE_DIR'))
