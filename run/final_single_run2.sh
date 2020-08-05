@@ -24,12 +24,12 @@ EPOCHS=100 \
 VALIDATION_SPLIT=0.2 \
 BATCH_SIZE=32 \
 ROUTINGS=3 \
-LR=0.04 \
+LR=0.00067 \
 LR_DECAY=0.96 \
 RR=0.0000002 \
 A=96 B=12 C=16 D=16 \
 WEIGHTS=$2 \
 MODE=train \
-RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/finals200ep/${2}/${1} \
+RESULTS_BASE_DIR=/net/people/plgmwnetrzak/magisterka/result/finals200ep/0.2/${1} \
 python3 /net/people/plgmwnetrzak/magisterka/capsnet-keras/run.py
 
