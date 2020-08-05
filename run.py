@@ -24,7 +24,12 @@ B = int(os.getenv('B', 12))
 C = int(os.getenv('C', 16))
 D = int(os.getenv('D', 16))
 WEIGHTS = os.getenv('WEIGHTS', '')
+MODE = os.getenv('MODE', 'TEST')
 VALIDATION_SPLIT = float(os.getenv('VALIDATION_SPLIT', '0.2'))
+
+# workaround: set the starting step to a high value if the network is being trained in two "batches"
+# STARTING_STEP = 0
+STARTING_STEP = 1e9 if WEIGHTS and MODE.lower() == "train" else 0 
 
 if __name__ == "__main__":
     cn_log_dir = RESULTS_BASE_DIR/MODEL_NAME / \
@@ -39,7 +44,8 @@ if __name__ == "__main__":
         lr_decay=LR_DECAY,
         routings=ROUTINGS,
         regularization_rate=RR,
-        A=A, B=B, C=C, D=D
+        A=A, B=B, C=C, D=D,
+        starting_step=STARTING_STEP
     )
 
     data_gen = DataGen(
@@ -52,12 +58,14 @@ if __name__ == "__main__":
     if WEIGHTS:
         print(f"Loading and evaluating model from {WEIGHTS}")
         cn.load_weights(str(WEIGHTS))
+    
+    if MODE.lower() == "test"
         test(
             model=cn.model,
             data_gen=data_gen,
             save_dir=cn_log_dir
         )
-    else:
+    else if MODE.lower() == "train":
         print("Training model")
 
         cn_callbacks = [
@@ -73,3 +81,6 @@ if __name__ == "__main__":
             epochs=EPOCHS,
             callbacks=cn_callbacks
         )
+    else:
+        print(f"Invalid mode {MODE}. Choose TRAIN or TEST")
+        exit(1)

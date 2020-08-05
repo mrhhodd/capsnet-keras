@@ -17,7 +17,8 @@ class EmCapsNet():
                  lr_decay,
                  routings,
                  regularization_rate,
-                 A, B, C, D
+                 A, B, C, D,
+                 starting_step=0
                  ):
         self.model_name = name
         self.input_shape = input_shape
@@ -31,7 +32,7 @@ class EmCapsNet():
         self.C = C
         self.D = D
         self.regularizer = regularizers.l2(regularization_rate)
-        self.global_step = K.variable(value=0)
+        self.global_step = K.variable(value=starting_step)
 
         strategy = tf.distribute.MirroredStrategy()
         with strategy.scope():
